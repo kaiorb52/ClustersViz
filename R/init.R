@@ -15,7 +15,7 @@
 
 run <- function()
 {
-  source("R/dependencies.R")
+  #source("R/dependencies.R")
 
   inviewer <- dialogViewer(dialogName = "", width = 1200, height = 800)
 
