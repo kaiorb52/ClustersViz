@@ -13,16 +13,9 @@
 #
 # ===========================================================================
 
-# library(shiny)
-# library(shinyBS)
-# library(shinycssloaders)
-# library(shinydashboard)
-# library(shinyjs)
-# library(shinyWidgets)
-# library(shinythemes)
-
 run <- function()
 {
+  source("R/dependencies.R")
 
   inviewer <- dialogViewer(dialogName = "", width = 1200, height = 800)
 
