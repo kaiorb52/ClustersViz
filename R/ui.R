@@ -1,4 +1,12 @@
 
+library(shiny)
+library(shinyBS)
+library(shinycssloaders)
+library(shinydashboard)
+library(shinyjs)
+library(shinyWidgets)
+library(shinythemes)
+
 # ui.R
 
 ui <- fluidPage(
