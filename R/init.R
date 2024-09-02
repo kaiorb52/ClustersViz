@@ -15,9 +15,11 @@
 
 run <- function()
 {
-  #source("R/dependencies.R")
-
-  inviewer <- dialogViewer(dialogName = "", width = 1200, height = 800)
-
-  return(runGadget(app = ui, server = server, viewer = inviewer))
+  shiny::runApp(
+    list(
+      ui = ui,
+      server = server
+    ),
+    launch.browser = TRUE
+  )
 }
