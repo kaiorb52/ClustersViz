@@ -3,15 +3,22 @@
 
 ui <- fluidPage(
     theme = shinytheme("sandstone"),
-
   navbarPage(title = "CLUSTERS VIZ",position = "static-top",
+  ###########################################################################
+  # DADOS ###################################################################
+  ###########################################################################
 
     tabPanel(title = "Dados", icon = icon("database", "fa-2x"),
       actionButton("import_data",  "Importação de dados", icon = icon("download")),
 
-      bsModal(id = "import_dataset", title = "Importação de dados", trigger = "import_data", size="large",
+      bsModal(
+        id = "import_dataset",
+        title = "Importação de dados",
+        trigger = "import_data",
+        size = "large",
 
         tabsetPanel(type = "pills",
+
           tabPanel("Datasets Salvos",
             br(),
             selectInput(
@@ -21,34 +28,52 @@ ui <- fluidPage(
             ),
             actionButton(inputId = "refresh_saved_df", label = "Refresh", icon = icon("sync-alt"))
           ),
+
           tabPanel("Arquivos",
             br(),
-            fileInput(
-              label = "Importar panilha do browser (csv, xlsx)",
-              inputId = "import_browser",
-              buttonLabel = "Browse...",
-              placeholder = "No file selected"
-            ),
+
+            shinyFilesButton("browser", "Escolha o Arquivo", "Selecione", multiple = FALSE),
+            actionButton(inputId = "import_browser", label = "Importar dados"),
+            actionButton(inputId = "refresh_browser", label = "Refresh", icon = icon("sync-alt"))
           ),
+
           tabPanel("Ambiente R",
             br(),
             selectInput(
               label = "Data.frame aberto no ambiente R",
-              inputId = "import_r_envi",
-              choices = c()
+              inputId = "r_envi_df",
+              choices = r_environment()
             ),
-            actionButton(inputId = "refresh_r_envi", label = "Refresh", icon = icon("sync-alt"))
+          actionButton(inputId = "import_r_envi", label = "Importar dados"),
+          actionButton(inputId = "refresh_r_envi", label = "Refresh", icon = icon("sync-alt"))
           )
         )
       ),
 
       hr(),
 
-      actionButton("view_data",  "Visualizar dados", icon = icon("download")),
-      actionButton("lemmatizar",  "Lemmatizadoção", icon = icon("download")),
-      actionButton("corpus_spilt_button",  "Corpus spilt", icon = icon("download")),
+      mainPanel(
+        htmlOutput("df_summary"),
+      ),
 
+      conditionalPanel(
+        condition = "output.df_exists == true", # Condição para mostrar os botões
+        actionButton("view_data", "Visualizar dados", icon = icon("download")),
+        bsModal(id = "view_data_bs",
+                trigger = "view_data",
+                title = "Visualizar dados",
+                size = "large",
+                DT::dataTableOutput("view_table")
+        ),
+        br(),
+        actionButton("lemmatizar", "Lemmatização", icon = icon("download")),
+        br(),
+        actionButton("corpus_spilt_button", "Corpus split", icon = icon("download"))
+      )
     ),
+  ###########################################################################
+  # CLUSTERS ################################################################
+  ###########################################################################
 
     tabPanel(title = "Clusters", icon = icon("chart-bar", "fa-2x"),
       sidebarLayout(
@@ -75,6 +100,10 @@ ui <- fluidPage(
         )
       )
     ),
+  ###########################################################################
+  # GRAFICOS DE REDE ########################################################
+  ###########################################################################
+
     tabPanel(title = "Graficos de Rede", icon = icon("project-diagram", "fa-2x"),
       sidebarLayout(
         sidebarPanel(

@@ -1,6 +1,6 @@
 
 # init.R
-# R version 4.4.1 (2024-06-14)
+# R version 4.4.1 (2024)
 
 # ===========================================================================
 #
@@ -10,6 +10,7 @@
 # O Clusters Viz foi produzido principalmente no Windows 10, contudo garanto
 # reprodutividade para Linux nas distros:
 # . Ubuntu 24.04.1 LTS
+# . Debian GNU/Linux 12 (bookworm)
 #
 # ===========================================================================
 
