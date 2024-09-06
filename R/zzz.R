@@ -7,5 +7,6 @@
   library(shinyBS)
   library(shinythemes)
   library(shinyFiles)
+  library(kableExtra)
 
 }

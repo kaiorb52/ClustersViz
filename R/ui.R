@@ -33,8 +33,7 @@ ui <- fluidPage(
             br(),
 
             shinyFilesButton("browser", "Escolha o Arquivo", "Selecione", multiple = FALSE),
-            actionButton(inputId = "import_browser", label = "Importar dados"),
-            actionButton(inputId = "refresh_browser", label = "Refresh", icon = icon("sync-alt"))
+            actionButton(inputId = "import_browser", label = "Importar dados")
           ),
 
           tabPanel("Ambiente R",
@@ -65,9 +64,31 @@ ui <- fluidPage(
                 size = "large",
                 DT::dataTableOutput("view_table")
         ),
-        br(),
+        hr(),
         actionButton("lemmatizar", "Lemmatização", icon = icon("download")),
-        br(),
+        bsModal(
+          id = "lemmatização_page",
+          title = "Lemmatização de dados",
+          trigger = "lemmatizar",
+          size = "large",
+
+          tabsetPanel(type = "pills",
+            tabPanel("Seleção",
+              selectInput(
+                label = "Coluna com ids",
+                inputId = "coluna_id",
+                choices = c()
+              ),
+              selectInput(
+                label = "Coluna com texto",
+                inputId = "coluna_texto",
+                choices = c()
+              ),
+              actionButton("run_lemmatizar", "Rodar Lematização no data.frame carregado")
+            )
+          )
+        ),
+        hr(),
         actionButton("corpus_spilt_button", "Corpus split", icon = icon("download"))
       )
     ),

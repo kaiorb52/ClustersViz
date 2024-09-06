@@ -36,7 +36,7 @@ server <- function(input, output, session)
 
       rv$file_name <- file_selected
 
-      rv$df <- get(r_envi_file, envir = globalenv())
+      rv$df <- get(file_selected, envir = globalenv())
 
     }
   })
@@ -71,6 +71,21 @@ server <- function(input, output, session)
   })
 
   outputOptions(output, "df_exists", suspendWhenHidden = FALSE)
+
+  observeEvent(input$lemmatizar, {
+    updateSelectInput(session, "coluna_texto", choices = names(rv$df))
+    updateSelectInput(session, "coluna_id", choices = names(rv$df))
+  })
+
+  observeEvent(input$run_lemmatizar, {
+    df <- rv$df
+
+    df <- df |>
+      lemmatização(coluna_texto = "texto", coluna_id = "V1")
+
+    rv$df <- df
+
+  })
 
   # CLUSTERS ################################################################
   # GRAFICOS DE REDE ########################################################
