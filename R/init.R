@@ -14,7 +14,7 @@
 #
 # ===========================================================================
 
-run <- function()
+ClusterViz <- function()
 {
   shinyApp(ui = ui, server = server)
 }

@@ -12,6 +12,10 @@ Imports:
     shinydashboard,
     shinyjs,
     shinyWidgets,
-    shinythemes
+    shinythemes,
+    data.table,
+    kableExtra,
+    quanteda,
+    rainette
 Encoding: UTF-8
 LazyData: true

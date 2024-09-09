@@ -7,7 +7,7 @@ server <- function(input, output, session)
   # DADOS ###################################################################
   ###########################################################################
 
-  rv <- reactiveValues(df = NULL, file_name = NULL)
+  rv <- reactiveValues(df = NULL, file_name = NULL, corpus_slipt = NULL)
 
   volumes <- getVolumes()()
   shinyFileChoose(input, "browser", roots = volumes, session = session)
@@ -80,14 +80,92 @@ server <- function(input, output, session)
   observeEvent(input$run_lemmatizar, {
     df <- rv$df
 
+    coluna_id <- input$coluna_id
+    coluna_texto <- input$coluna_texto
+
     df <- df |>
-      lemmatização(coluna_texto = "texto", coluna_id = "V1")
+      lemmatização(coluna_texto = coluna_texto, coluna_id = coluna_id)
 
     rv$df <- df
 
   })
 
+  observeEvent(input$corpus_split, {
+    updateSelectInput(session, "texto", choices = names(rv$df))
+  })
+
+  observeEvent(input$run_corpus_split, {
+    print("Rodando corpus split...")
+
+    # Adicione mais informações de depuração
+    print(paste("Texto:", input$texto))
+    print(paste("Segment Size:", input$segment_size))
+
+    corpus_slipt_result <- corpus_slipt(
+      df = rv$df,
+      texto = input$texto,
+      segment_size = input$segment_size
+    )
+
+    print("Corpus split finalizado...")
+
+    rv$corpus_slipt <- corpus_slipt_result
+
+  })
+
+  output$corpus_slipt_exist <- reactive({
+    return(!is.null(rv$corpus_slipt))
+  })
+
+  outputOptions(output, "corpus_slipt_exist", suspendWhenHidden = FALSE)
+
+  ###########################################################################
   # CLUSTERS ################################################################
+  ###########################################################################
+
+  graphInput <- eventReactive(input$run_cluster_graph, {
+
+    corpus_slipt <- rv$corpus_slipt
+
+    lista_cluster <- clusterização(corpus_slipt, input$k)
+
+    lista_cluster
+  })
+
+  observeEvent(graphInput(), {
+    req(graphInput())
+
+    updateSliderInput(session, "k_selected", max = graphInput()$k_number)
+    updateSelectInput(session, "selected_doc",
+      choices = seq_len(graphInput()$k_number)
+    )
+  })
+
+  output$rainette_plot <- renderPlot({
+    req(graphInput())
+
+    lista_cluster <- graphInput()
+    rainette_plot(lista_cluster$res1, lista_cluster$dtm, k = input$k_selected)
+  })
+
+  output$dynamic_docs_ui <- renderUI({
+    req(graphInput())
+    docs_sample_ui("rainette1", graphInput()$res1)
+  })
+
+  docs_sample_server("rainette1", graphInput()$res1, rv$corpus_slipt, graphInput()$k_number)
+
+  observe({
+    selected_tab <- input$cluster_tabs
+
+    # Esconda o sidebarPanel quando a aba "Documentos dos Clusters" estiver ativa
+    if (selected_tab == "Documentos dos Clusters") {
+      shinyjs::hide(id = "sidebar")
+    } else {
+      shinyjs::show(id = "sidebar")
+    }
+  })
+
   # GRAFICOS DE REDE ########################################################
 
 }

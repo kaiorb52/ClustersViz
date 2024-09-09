@@ -1,7 +1,7 @@
 
 # test.R
 
-reforma_tributaria <- fread("~/Documentos/reforma_tributaria.csv", encoding = "Latin-1")
+#reforma_tributaria <- fread("~/Documentos/reforma_tributaria.csv", encoding = "Latin-1")
 
 {
   #rm(list = ls())
@@ -16,5 +16,5 @@ reforma_tributaria <- fread("~/Documentos/reforma_tributaria.csv", encoding = "L
     rm(a)
 
   }
-  run()
+  ClusterViz()
 }

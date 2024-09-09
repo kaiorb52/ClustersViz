@@ -3,6 +3,7 @@
 
 ui <- fluidPage(
     theme = shinytheme("sandstone"),
+    useShinyjs(),
   navbarPage(title = "CLUSTERS VIZ",position = "static-top",
   ###########################################################################
   # DADOS ###################################################################
@@ -65,7 +66,7 @@ ui <- fluidPage(
                 DT::dataTableOutput("view_table")
         ),
         hr(),
-        actionButton("lemmatizar", "Lemmatização", icon = icon("download")),
+        actionButton("lemmatizar", "Lemmatização"),
         bsModal(
           id = "lemmatização_page",
           title = "Lemmatização de dados",
@@ -89,51 +90,93 @@ ui <- fluidPage(
           )
         ),
         hr(),
-        actionButton("corpus_spilt_button", "Corpus split", icon = icon("download"))
+        actionButton("corpus_split", "Corpus split"),
+        bsModal(
+          id = "corpus_spilt_page",
+          title = "Corpus split",
+          trigger = "corpus_split",
+          size = "large",
+          tabsetPanel(type = "pills",
+            tabPanel("Seleção",
+              selectInput(
+                label = "Coluna com o texto",
+                inputId = "texto",
+                choices = c()
+              ),
+              numericInput("segment_size", label = "segment_size", value = 40),
+              actionButton("run_corpus_split", "Split")
+            )
+          )
+        )
       )
     ),
   ###########################################################################
   # CLUSTERS ################################################################
   ###########################################################################
-
     tabPanel(title = "Clusters", icon = icon("chart-bar", "fa-2x"),
-      sidebarLayout(
-        sidebarPanel(
-          sliderInput(
-            label = "Numero de clusters",
-            inputId = "cluster_slider",
-            value = 2,
-            min = 2,
-            max = 16,
+      conditionalPanel(
+        condition = "output.corpus_slipt_exist == true", # Condição para mostrar os botões
+        #sidebarLayout(
+          sidebarPanel(
+            id = "sidebar",
+            shiny::numericInput(
+              inputId = "k",
+              label = "Numero de clusters",
+              value = 10,
+              min = 2,
+              max = 16
+            ),
+            actionButton("run_cluster_graph", "Gerar Grafico de Clusters"),
+            hr(),
+            sliderInput(
+              label = "Clusters selecionados",
+              inputId = "k_selected",
+              value = 2,
+              min = 2,
+              max = 16,
+            ),
           ),
-          selectInput(
-            label = "Cluster",
-            inputId = "selected_doc",
-            choices = c()
+          mainPanel(
+            fluidRow(
+              column(
+                height = 12,
+                width = 12,
+
+            tabsetPanel(
+              id = "cluster_tabs",  # Defina um id para o tabsetPanel interno
+              tabPanel("Manipulação dos Clusters"),
+              tabPanel("Exploração dos Clusters",
+                plotOutput("rainette_plot")
+              ),
+              tabPanel("Documentos dos Clusters",
+                       div(
+                         style = "width: 100%; height: 100%;",  # Largura e altura completas
+                         uiOutput("dynamic_docs_ui")
+                       )
+              )
+              )
+              ),
+            )
           )
-        ),
-        mainPanel(
-          tabsetPanel(
-            tabPanel("Exploração dos Clusters"),
-            tabPanel("Documentos dos Clusters"),
-            tabPanel("Manipulação dos Clusters"),
-          )
-        )
-      )
+        #)
+      ),
     ),
   ###########################################################################
   # GRAFICOS DE REDE ########################################################
   ###########################################################################
 
     tabPanel(title = "Graficos de Rede", icon = icon("project-diagram", "fa-2x"),
-      sidebarLayout(
-        sidebarPanel(
-          selectInput(
-            "choice_df2", "Carrege seu data.frame clusterizado",
-            choices = c()
-          )
-        ),
-        mainPanel()
+      conditionalPanel(
+        condition = "output.df_exists == true", # Condição para mostrar os botões
+        sidebarLayout(
+          sidebarPanel(
+            selectInput(
+              "choice_df2", "Carrege seu data.frame clusterizado",
+              choices = c()
+            )
+          ),
+          mainPanel()
+        )
       )
     )
   )

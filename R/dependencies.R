@@ -2,6 +2,11 @@
 # dependencies.R
 
 library(dplyr)
+library(openxlsx)
+library(data.table)
+library(quanteda)
+library(stringr)
+library(rainette)
 library(kableExtra)
 library(shiny)
 library(shinyBS)

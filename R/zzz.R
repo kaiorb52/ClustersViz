@@ -8,5 +8,8 @@
   library(shinythemes)
   library(shinyFiles)
   library(kableExtra)
+  library(data.table)
+  library(quanteda)
+  library(rainette)
 
 }
