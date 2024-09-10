@@ -161,11 +161,12 @@ server <- function(input, output, session)
     # Esconda o sidebarPanel quando a aba "Documentos dos Clusters" estiver ativa
     if (selected_tab == "Documentos dos Clusters") {
       shinyjs::hide(id = "sidebar")
+      shinyjs::addClass(selector = "#main_panel", class = "expanded-panel")  # Expanda o mainPanel
     } else {
       shinyjs::show(id = "sidebar")
+      shinyjs::removeClass(selector = "#main_panel", class = "expanded-panel")  # Restaure o tamanho original
     }
   })
-
   # GRAFICOS DE REDE ########################################################
 
 }

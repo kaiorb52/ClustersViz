@@ -4,6 +4,15 @@
 ui <- fluidPage(
     theme = shinytheme("sandstone"),
     useShinyjs(),
+
+    tags$head(
+      tags$style(HTML("
+      .expanded-panel {
+        width: 100% !important;  /* Expande o mainPanel */
+      }
+    "))
+    ),
+
   navbarPage(title = "CLUSTERS VIZ",position = "static-top",
   ###########################################################################
   # DADOS ###################################################################
@@ -113,10 +122,22 @@ ui <- fluidPage(
   ###########################################################################
   # CLUSTERS ################################################################
   ###########################################################################
+  tags$head(
+    tags$style(
+      HTML("
+      #mainPanelExpanded {
+        width: 100% !important;
+      }
+      #mainPanelNormal {
+        width: 70% !important;
+      }
+    ")
+    )
+  ),
     tabPanel(title = "Clusters", icon = icon("chart-bar", "fa-2x"),
       conditionalPanel(
-        condition = "output.corpus_slipt_exist == true", # Condição para mostrar os botões
-        #sidebarLayout(
+        condition = "output.corpus_slipt_exist == true",
+        sidebarLayout(
           sidebarPanel(
             id = "sidebar",
             shiny::numericInput(
@@ -137,11 +158,8 @@ ui <- fluidPage(
             ),
           ),
           mainPanel(
-            fluidRow(
-              column(
-                height = 12,
-                width = 12,
-
+            id = "main_panel",
+            class = "mainPanelNormal",  # Essa classe mudará dinamicamente
             tabsetPanel(
               id = "cluster_tabs",  # Defina um id para o tabsetPanel interno
               tabPanel("Manipulação dos Clusters"),
@@ -149,16 +167,11 @@ ui <- fluidPage(
                 plotOutput("rainette_plot")
               ),
               tabPanel("Documentos dos Clusters",
-                       div(
-                         style = "width: 100%; height: 100%;",  # Largura e altura completas
-                         uiOutput("dynamic_docs_ui")
-                       )
-              )
-              )
+                uiOutput("dynamic_docs_ui")
               ),
             )
           )
-        #)
+        )
       ),
     ),
   ###########################################################################
