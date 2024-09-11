@@ -1,6 +1,7 @@
 
 # dependencies.R
 
+library(tidyr)
 library(dplyr)
 library(openxlsx)
 library(data.table)

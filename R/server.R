@@ -7,7 +7,7 @@ server <- function(input, output, session)
   # DADOS ###################################################################
   ###########################################################################
 
-  rv <- reactiveValues(df = NULL, file_name = NULL, corpus_slipt = NULL)
+  rv <- reactiveValues(df = NULL, file_name = NULL, corpus = NULL, corpus_slipt = NULL, texto = NULL)
 
   volumes <- getVolumes()()
   shinyFileChoose(input, "browser", roots = volumes, session = session)
@@ -109,7 +109,9 @@ server <- function(input, output, session)
 
     print("Corpus split finalizado...")
 
-    rv$corpus_slipt <- corpus_slipt_result
+    rv$corpus <- corpus_slipt_result[["corpus"]]
+    rv$corpus_slipt <- corpus_slipt_result[["corpus_slipt"]]
+    rv$texto <- input$texto
 
   })
 
@@ -130,6 +132,19 @@ server <- function(input, output, session)
     lista_cluster <- clusterização(corpus_slipt, input$k)
 
     lista_cluster
+  })
+
+  output$cluster_tab <- renderText({
+    req(graphInput())
+
+    tab_df <- as.data.frame(graphInput()$tab)
+
+    tab_df$percentual <- (tab_df$Freq / sum(tab_df$Freq)) * 100
+
+    tab_df$percentual <- paste0(round(tab_df$percentual, digits = 2), " %")
+
+    kable(tab_df, format = "html") %>%
+      kable_styling("striped", full_width = F)
   })
 
   observeEvent(graphInput(), {
@@ -167,6 +182,32 @@ server <- function(input, output, session)
       shinyjs::removeClass(selector = "#main_panel", class = "expanded-panel")  # Restaure o tamanho original
     }
   })
+
+  ###########################################################################
   # GRAFICOS DE REDE ########################################################
+  ###########################################################################
+
+  observeEvent(input$run_network_graph, {
+    req(graphInput())
+
+    print("Gerando graficos...")
+
+    df_lemmatizado <- criar_df_lemmatizado(
+      df = rv$df,
+      texto_lemmatizado = rv$texto,
+      corpus = rv$corpus,
+      corpus_slipt = rv$corpus_slipt,
+      res1 = graphInput()$res1,
+      k_number = graphInput()$k_number
+    )
+
+    print(df_lemmatizado)
+
+    listas_k <- listas_k(df = df_lemmatizado, k = graphInput()$k_number)
+
+    print(listas_k)
+
+    print("Graficos gerados")
+  })
 
 }

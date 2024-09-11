@@ -1,6 +1,7 @@
-## CSS and modules for Shiny gadgets
 
-## CSS for shiny gadgets
+# rainette.R
+# by juba
+# url: <>
 
 rainette_explor_css <- function() {
   "

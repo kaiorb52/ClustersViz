@@ -58,9 +58,7 @@ ui <- fluidPage(
           )
         )
       ),
-
       hr(),
-
       mainPanel(
         htmlOutput("df_summary"),
       ),
@@ -122,47 +120,59 @@ ui <- fluidPage(
   ###########################################################################
   # CLUSTERS ################################################################
   ###########################################################################
-  tags$head(
-    tags$style(
-      HTML("
-      #mainPanelExpanded {
-        width: 100% !important;
-      }
-      #mainPanelNormal {
-        width: 70% !important;
-      }
-    ")
-    )
-  ),
+
+  # tags$head(
+  #   tags$style(
+  #     HTML("
+  #     #mainPanelExpanded {
+  #       width: 100% !important;
+  #     }
+  #     #mainPanelNormal {
+  #       width: 70% !important;
+  #     }
+  #   ")
+  #   )
+  # ),
+
     tabPanel(title = "Clusters", icon = icon("chart-bar", "fa-2x"),
+
       conditionalPanel(
         condition = "output.corpus_slipt_exist == true",
+
         sidebarLayout(
           sidebarPanel(
             id = "sidebar",
-            shiny::numericInput(
-              inputId = "k",
-              label = "Numero de clusters",
-              value = 10,
-              min = 2,
-              max = 16
+            conditionalPanel(
+              condition = "input.cluster_tabs == 'Manipulação dos Clusters'",
+              shiny::numericInput(
+                inputId = "k",
+                label = "Numero de clusters",
+                value = 10,
+                min = 2,
+                max = 16
+              ),
+              actionButton("run_cluster_graph", "Gerar Clusters"),
             ),
-            actionButton("run_cluster_graph", "Gerar Grafico de Clusters"),
-            hr(),
-            sliderInput(
-              label = "Clusters selecionados",
-              inputId = "k_selected",
-              value = 2,
-              min = 2,
-              max = 16,
+            conditionalPanel(
+              condition = "input.cluster_tabs == 'Exploração dos Clusters'",
+              sliderInput(
+                label = "Clusters selecionados",
+                inputId = "k_selected",
+                value = 2,
+                min = 2,
+                max = 16,
+              ),
             ),
           ),
+
           mainPanel(
             id = "main_panel",
-            class = "mainPanelNormal",  # Essa classe mudará dinamicamente
+            class = "mainPanelNormal",
             tabsetPanel(
-              id = "cluster_tabs",  # Defina um id para o tabsetPanel interno
-              tabPanel("Manipulação dos Clusters"),
+              id = "cluster_tabs",
+              tabPanel("Manipulação dos Clusters",
+                htmlOutput("cluster_tab")
+              ),
               tabPanel("Exploração dos Clusters",
                 plotOutput("rainette_plot")
               ),
@@ -174,6 +184,7 @@ ui <- fluidPage(
         )
       ),
     ),
+
   ###########################################################################
   # GRAFICOS DE REDE ########################################################
   ###########################################################################
@@ -183,12 +194,15 @@ ui <- fluidPage(
         condition = "output.df_exists == true", # Condição para mostrar os botões
         sidebarLayout(
           sidebarPanel(
+            actionButton("run_network_graph", "Gerar Graficos de rede"),
             selectInput(
-              "choice_df2", "Carrege seu data.frame clusterizado",
+              "choice_df2", "Selecione o cluster que deseja visualizar",
               choices = c()
             )
           ),
-          mainPanel()
+          mainPanel(
+
+          )
         )
       )
     )
