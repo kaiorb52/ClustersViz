@@ -151,7 +151,7 @@ listas_k <- function(df, k){
 }
 
 
-data_corpus <- function(
+data_plot <- function(
     list_clusters,
     texto_lemmatizado_var,
     coocTerm,
@@ -159,7 +159,7 @@ data_corpus <- function(
     termos_remove
 ){
 
-  load("src/calculateCoocStatistics")
+  #load("src/calculateCoocStatistics")
   nova_lista = list()
 
   for (x in names(list_clusters)){
@@ -215,7 +215,7 @@ data_corpus <- function(
     }
 
     graphNetwork <- graph_from_data_frame(resultGraph, directed = FALSE)
-    graphNetwork <- simplify(graphNetwork, remove.multiple = FALSE, remove.loops = TRUE)
+    graphNetwork <- simplify(graphNetwork)
 
     verticesToRemove <- V(graphNetwork)[degree(graphNetwork) < 2]
     graphNetwork <- delete.vertices(graphNetwork, verticesToRemove)

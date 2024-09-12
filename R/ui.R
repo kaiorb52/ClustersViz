@@ -189,21 +189,25 @@ ui <- fluidPage(
   # GRAFICOS DE REDE ########################################################
   ###########################################################################
 
-    tabPanel(title = "Graficos de Rede", icon = icon("project-diagram", "fa-2x"),
-      conditionalPanel(
-        condition = "output.df_exists == true", # Condição para mostrar os botões
-        sidebarLayout(
-          sidebarPanel(
-            actionButton("run_network_graph", "Gerar Graficos de rede"),
-            selectInput(
-              "choice_df2", "Selecione o cluster que deseja visualizar",
-              choices = c()
-            )
-          ),
-          mainPanel(
-
-          )
-        )
+  tabPanel(title = "Graficos de Rede", icon = icon("project-diagram", "fa-2x"),
+           conditionalPanel(
+             condition = "output.corpus_slipt_exist == true",
+             sidebarLayout(
+               sidebarPanel(
+                 textInput("coocTerm", "Termo de Coocorrência", value = "reforma"),
+                 numericInput("numberOfCoocs", "Número de Coocorrências", value = 15, min = 1),
+                 textInput(
+                   "termos_remove", "Termos a Remover (separados por vírgula)",
+                   value = "governo, jair, bolsonaro, paulo, guedes"
+                 ),
+                 actionButton("run_network_graph", "Gerar Graficos de rede"),
+                 hr(),
+                 selectInput("selected_cluster", "Selecione o cluster que deseja visualizar", choices = paste0("clust_", 1:10))
+               ),
+               mainPanel(
+                 visNetworkOutput("networkPlot", height = "600px")
+               )
+             )
       )
     )
   )

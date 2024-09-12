@@ -7,7 +7,7 @@ server <- function(input, output, session)
   # DADOS ###################################################################
   ###########################################################################
 
-  rv <- reactiveValues(df = NULL, file_name = NULL, corpus = NULL, corpus_slipt = NULL, texto = NULL)
+  rv <- reactiveValues(df = NULL, file_name = NULL, corpus = NULL, corpus_slipt = NULL, texto = NULL, data_plots = NULL)
 
   volumes <- getVolumes()()
   shinyFileChoose(input, "browser", roots = volumes, session = session)
@@ -201,13 +201,36 @@ server <- function(input, output, session)
       k_number = graphInput()$k_number
     )
 
-    print(df_lemmatizado)
+    # print(df_lemmatizado)
 
     listas_k <- listas_k(df = df_lemmatizado, k = graphInput()$k_number)
 
-    print(listas_k)
+    # print(listas_k)
+
+    rv$data_plots <- data_plot(
+      list_clusters = listas_k,
+      texto_lemmatizado_var = rv$texto,
+      coocTerm = input$coocTerm,
+      numberOfCoocs = input$numberOfCoocs,
+      termos_remove = ""
+    )
 
     print("Graficos gerados")
   })
 
+  output$networkPlot <- renderVisNetwork({
+
+    data_grafs <- rv$data_plots
+    selected_cluster <- input$selected_cluster
+
+    if (!selected_cluster %in% names(data_grafs)) {
+      showNotification("Cluster selecionado não existe!", type = "error")
+      return(NULL)
+    }
+
+    gerador_plot(data_grafs[[selected_cluster]], name = selected_cluster, coocTerm = "Reforma")
+
+  })
+
 }
+
