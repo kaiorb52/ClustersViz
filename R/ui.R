@@ -29,24 +29,24 @@ ui <- fluidPage(
 
         tabsetPanel(type = "pills",
 
-          tabPanel("Datasets Salvos",
-            br(),
-            selectInput(
-              label = "Importar dataset usado anteriormente",
-              inputId = "import_saved_df",
-              choices = c()
-            ),
-            actionButton(inputId = "refresh_saved_df", label = "Refresh", icon = icon("sync-alt"))
-          ),
+          # tabPanel("Datasets Salvos",
+          #   br(),
+          #   selectInput(
+          #     label = "Importar dataset usado anteriormente",
+          #     inputId = "import_saved_df",
+          #     choices = c()
+          #   ),
+          #   actionButton(inputId = "refresh_saved_df", label = "Refresh", icon = icon("sync-alt"))
+          # ),
 
-          tabPanel("Arquivos",
+          tabPanel("Arquivos", icon = icon("folder"),
             br(),
 
             shinyFilesButton("browser", "Escolha o Arquivo", "Selecione", multiple = FALSE),
             actionButton(inputId = "import_browser", label = "Importar dados")
           ),
 
-          tabPanel("Ambiente R",
+          tabPanel("Ambiente R", icon = icon("r-project"),
             br(),
             selectInput(
               label = "Data.frame aberto no ambiente R",
@@ -55,7 +55,13 @@ ui <- fluidPage(
             ),
           actionButton(inputId = "import_r_envi", label = "Importar dados"),
           actionButton(inputId = "refresh_r_envi", label = "Refresh", icon = icon("sync-alt"))
-          )
+          ),
+          tabPanel("Google Sheets", icon = icon("google-drive"),
+            br(),
+            textInput("url_googlesheets", "Url da Panilha", value = "..."),
+            textInput("tab_googlesheets", "Tabelas (W.I.P)", value = ""),
+            actionButton(inputId = "import_googlesheets", label = "Importar dados")
+          ),
         )
       ),
       hr(),
@@ -73,15 +79,15 @@ ui <- fluidPage(
                 DT::dataTableOutput("view_table")
         ),
         hr(),
-        actionButton("lemmatizar", "Lemmatização"),
+        actionButton("lemmatizar_corpus_split", "Lemmatização|Corpus split"),
         bsModal(
           id = "lemmatização_page",
-          title = "Lemmatização de dados",
-          trigger = "lemmatizar",
+          title = "Manipulação de dados",
+          trigger = "lemmatizar_corpus_split",
           size = "large",
 
           tabsetPanel(type = "pills",
-            tabPanel("Seleção",
+            tabPanel("Lemmatizar (W.I.P)",
               selectInput(
                 label = "Coluna com ids",
                 inputId = "coluna_id",
@@ -93,18 +99,8 @@ ui <- fluidPage(
                 choices = c()
               ),
               actionButton("run_lemmatizar", "Rodar Lematização no data.frame carregado")
-            )
-          )
-        ),
-        hr(),
-        actionButton("corpus_split", "Corpus split"),
-        bsModal(
-          id = "corpus_spilt_page",
-          title = "Corpus split",
-          trigger = "corpus_split",
-          size = "large",
-          tabsetPanel(type = "pills",
-            tabPanel("Seleção",
+            ),
+            tabPanel("Corpus Slipt",
               selectInput(
                 label = "Coluna com o texto",
                 inputId = "texto",

@@ -23,7 +23,22 @@ server <- function(input, output, session)
 
       rv$file_name <- basename(file_path)
 
-      rv$df <- data.table::fread(file_path)
+      if (grepl(".csv", file_path)){
+        rv$df <- data.table::fread(file_path, encoding = "Latin-1")
+      }
+
+      if (grepl(".xlsx", file_path)){
+        rv$df <- openxlsx::read.xlsx(file_path)
+      }
+
+      if (grepl(".rds", file_path)){
+        rv$df <- readRDS(file_path)
+      }
+
+      if (!grepl(".(csv|xlsx|rds)", file_path)){
+        message("Tipo de arquivo não suportado...")
+      }
+
     }
   })
 
@@ -40,6 +55,18 @@ server <- function(input, output, session)
 
     }
   })
+
+  observeEvent(input$import_googlesheets, {
+
+    url <- input$url_googlesheets
+
+    sheet_info <- googledrive::drive_get(url)
+    rv$file_name <- sheet_info$name
+
+    rv$df <- googlesheets4::read_sheet(url)
+
+  })
+
 
   observeEvent(input$refresh_r_envi, {
     updateSelectInput(session, "r_envi_df", choices = r_environment())
@@ -72,9 +99,11 @@ server <- function(input, output, session)
 
   outputOptions(output, "df_exists", suspendWhenHidden = FALSE)
 
-  observeEvent(input$lemmatizar, {
+  observeEvent(input$lemmatizar_corpus_split, {
     updateSelectInput(session, "coluna_texto", choices = names(rv$df))
     updateSelectInput(session, "coluna_id", choices = names(rv$df))
+
+    updateSelectInput(session, "texto", choices = names(rv$df))
   })
 
   observeEvent(input$run_lemmatizar, {
@@ -88,10 +117,6 @@ server <- function(input, output, session)
 
     rv$df <- df
 
-  })
-
-  observeEvent(input$corpus_split, {
-    updateSelectInput(session, "texto", choices = names(rv$df))
   })
 
   observeEvent(input$run_corpus_split, {
