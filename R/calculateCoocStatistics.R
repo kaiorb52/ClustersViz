@@ -5,6 +5,8 @@
 
 calculateCoocStatistics <- function(coocTerm, binDTM, measure = "DICE") {
 
+  print("0")
+
   # Ensure Matrix (SparseM} or matrix {base} format
   require(Matrix)
 
@@ -13,8 +15,12 @@ calculateCoocStatistics <- function(coocTerm, binDTM, measure = "DICE") {
     binDTM[binDTM > 1] <- 1
   }
 
+  print("1")
+
   # calculate cooccurrence counts
   coocCounts <- t(binDTM) %*% binDTM
+
+  print("2")
 
   # retrieve numbers for statistic calculation
   k <- nrow(binDTM)
@@ -22,6 +28,8 @@ calculateCoocStatistics <- function(coocTerm, binDTM, measure = "DICE") {
   kj <- colSums(binDTM)
   names(kj) <- colnames(binDTM)
   kij <- coocCounts[coocTerm, ]
+
+  print("3")
 
   # calculate statistics
   switch(measure,

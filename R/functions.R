@@ -1,6 +1,8 @@
 
 # functions.R
 
+source("R/calculateCoocStatistics.R")
+
 ############################################################################
 # DADOS ####################################################################
 ############################################################################
@@ -169,12 +171,18 @@ data_plot <- function(
     df <- list_clusters[[x]]
     corpus <- corpus(df[[texto_lemmatizado_var]])
 
+    print("Corpus rodou...")
+
     corpus_tokens <- corpus |>
       tokens(remove_punct = TRUE, remove_numbers = TRUE, remove_symbols = TRUE) %>%
       tokens_tolower()
 
+    print("Corpus tokens rodou..")
+
     sotu_collocations <- quanteda.textstats::textstat_collocations(corpus_tokens, min_count = 15)
     #sotu_collocations <- sotu_collocations[1:150, ]
+
+    print("sotou collaction rodou..")
 
     corpus_tokens2 <- tokens_compound(corpus_tokens, sotu_collocations)
 
@@ -187,9 +195,14 @@ data_plot <- function(
       dfm_trim(min_docfreq = 10, max_docfreq = 1000L) %>%
       dfm_weight(scheme = "boolean")
 
+    print("binDTM rodou..")
+
     #term_freq <- colSums(binDTM)
 
     coocs <- calculateCoocStatistics(coocTerm, binDTM, measure="LOGLIK")
+
+    print("coocs rodou..")
+
 
     resultGraph <- data.frame(from = character(), to = character(), sig = numeric(0))
 
@@ -200,6 +213,8 @@ data_plot <- function(
     tmpGraph[, 3] <- coocs[1:numberOfCoocs]
 
     resultGraph <- rbind(resultGraph, tmpGraph)
+
+    print("resultGraph rodou..")
 
     for (i in 1:numberOfCoocs){
       newCoocTerm <- names(coocs)[i]

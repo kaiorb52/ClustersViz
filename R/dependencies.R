@@ -26,6 +26,5 @@ library(igraph)    # ver. 2.0.3 - R (>= 3.5.0)
 library(ggraph)    # ver. 2.2.1 - R (>= 2.10)
 library(scales)    # ver. 1.3.0 - R (>= 3.6)
 library(visNetwork)
-library(igraph)
-library(scales)
 
+library(Matrix)
