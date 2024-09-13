@@ -206,14 +206,28 @@ ui <- fluidPage(
                    "termos_remove", "Termos a Remover (separados por vírgula)",
                    value = "governo, jair, bolsonaro, paulo, guedes"
                  ),
-                 actionButton("run_network_graph", "Gerar Graficos de rede"),
+                 actionButton("run_network_graph", "Gerar Graficos"),
                  hr(),
                  selectInput("selected_cluster", "Selecione o cluster que deseja visualizar", choices = paste0("clust_", 1:10))
                ),
+               # tabsetPanel(
+               #  tabPanel("Grafico de Rede",
+               #    mainPanel(
+               #       visNetworkOutput("networkPlot", height = "600px")
+               #    )
+               #  ),
+               #  tabPanel("Grafico de Nuvem",
+               #    mainPanel(
+               #      plotOutput("wordcloudPlot", height = "600px")
+               #    )
+               #  )
+               # )
+
                mainPanel(
                  visNetworkOutput("networkPlot", height = "600px")
                )
-             )
+
+        )
       )
     )
   )

@@ -255,7 +255,8 @@ gerador_plot <- function(graphNetwork, coocTerm, name){
 
 
   # Configurar cores e tamanhos dos nós e arestas
-  V(graphNetwork)$color <- ifelse(V(graphNetwork)$name == coocTerm, 'cornflowerblue', 'orange')
+  #V(graphNetwork)$color <- ifelse(V(graphNetwork)$name == coocTerm, 'cornflowerblue', 'orange')
+  V(graphNetwork)$color <- ifelse(tolower(V(graphNetwork)$name) == tolower(coocTerm), 'cornflowerblue', 'orange')
   E(graphNetwork)$color <- "DarkGray"
   E(graphNetwork)$width <- rescale(E(graphNetwork)$sig, to = c(1, 10))
   V(graphNetwork)$size <- rescale(log(degree(graphNetwork)), to = c(5, 15))
@@ -287,3 +288,18 @@ gerador_plot <- function(graphNetwork, coocTerm, name){
   #visTitle(paste(name, "Graph"))
 }
 
+
+gerar_nuvem <- function(df_cluster, max_palavras = 100) {
+  # df_cluster é o dataframe com as palavras e suas frequências
+  palavras <- df_cluster$termo  # Substitua por sua coluna de termos
+  frequencias <- df_cluster$frequencia  # Substitua por sua coluna de frequências
+
+  # Gerando a nuvem de palavras
+  wordcloud(
+    palavras,
+    frequencias,
+    scale = c(4, 0.5),  # Ajuste o tamanho das palavras
+    max.words = max_palavras,
+    colors = brewer.pal(8, "Dark2")
+  )
+}

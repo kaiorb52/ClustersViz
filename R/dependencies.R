@@ -28,3 +28,8 @@ library(scales)    # ver. 1.3.0 - R (>= 3.6)
 library(visNetwork)
 
 library(Matrix)
+
+
+
+library(wordcloud)
+library(RColorBrewer)

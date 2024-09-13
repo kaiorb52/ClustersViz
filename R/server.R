@@ -257,11 +257,7 @@ server <- function(input, output, session)
       k_number = graphInput()$k_number
     )
 
-    # print(df_lemmatizado)
-
     listas_k <- listas_k(df = df_lemmatizado, k = graphInput()$k_number)
-
-    # print(listas_k)
 
     rv$data_plots <- data_plot(
       list_clusters = listas_k,
@@ -271,7 +267,9 @@ server <- function(input, output, session)
       termos_remove = ""
     )
 
-    print("Graficos gerados")
+    print("Graficos de rede gerados")
+
+    print("Graficos de Nuvem de palavras gerados")
   })
 
   output$networkPlot <- renderVisNetwork({
@@ -279,14 +277,18 @@ server <- function(input, output, session)
     data_grafs <- rv$data_plots
     selected_cluster <- input$selected_cluster
 
-    if (!selected_cluster %in% names(data_grafs)) {
-      showNotification("Cluster selecionado não existe!", type = "error")
-      return(NULL)
-    }
-
     gerador_plot(data_grafs[[selected_cluster]], name = selected_cluster, coocTerm = "Reforma")
 
   })
+
+  output$wordcloudPlot <- renderPlot({
+    data_grafs <- rv$data_plots
+    selected_cluster <- input$selected_cluster
+
+    # Gerando a nuvem de palavras para o cluster selecionado
+    gerar_nuvem(data_grafs[[selected_cluster]])
+  })
+
 
 }
 

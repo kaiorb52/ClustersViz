@@ -37,4 +37,7 @@
   library(shinythemes)
   library(miniUI)
 
+  library(wordcloud)
+  library(RColorBrewer)
+
 }
