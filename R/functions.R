@@ -215,7 +215,7 @@ data_plot <- function(
     }
 
     graphNetwork <- graph_from_data_frame(resultGraph, directed = FALSE)
-    graphNetwork <- simplify(graphNetwork)
+    graphNetwork <- simplify(graphNetwork, remove.multiple = FALSE, remove.loops = TRUE)
 
     verticesToRemove <- V(graphNetwork)[degree(graphNetwork) < 2]
     graphNetwork <- delete.vertices(graphNetwork, verticesToRemove)
@@ -225,7 +225,12 @@ data_plot <- function(
 
   }
 
+
+  print(nova_lista)
+
   print("Analise pronta...")
+
+
 
   return(nova_lista)
 }

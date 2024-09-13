@@ -12,4 +12,36 @@
   library(quanteda)
   library(rainette)
 
+  library(tidyverse)
+  library(igraph)
+  library(visNetwork)
+
+  library(tidyr)
+  library(dplyr)
+  library(openxlsx)
+  library(data.table)
+  library(quanteda)
+  library(stringr)
+  library(rainette)
+  library(kableExtra)
+  library(shiny)
+  library(shinyBS)
+  library(shinyFiles)
+  library(shinycssloaders)
+  library(shinydashboard)
+  library(shinyjs)
+  library(shinyWidgets)
+  library(shinythemes)
+  library(miniUI)
+
+
+  library(tidyverse) # ver. 2.0.0 - R (>= 3.3)
+  library(quanteda)  # ver. 4.0.2 - R (>= 3.5.0)
+  library(igraph)    # ver. 2.0.3 - R (>= 3.5.0)
+  library(ggraph)    # ver. 2.2.1 - R (>= 2.10)
+  library(scales)    # ver. 1.3.0 - R (>= 3.6)
+  library(visNetwork)
+  library(igraph)
+  library(scales)
+
 }
