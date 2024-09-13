@@ -195,6 +195,31 @@ server <- function(input, output, session)
 
   docs_sample_server("rainette1", graphInput()$res1, rv$corpus_slipt, graphInput()$k_number)
 
+  observeEvent(input$get_r_code, {
+    codigo <- paste0(
+      "
+      corpus <- corpus(df, text_field = '", rv$texto, "')
+      corpus_split <- split_segments(corpus, segment_size = 40)
+
+      dtm <- dfm(tokens(corpus_split))
+      dtm <- dfm_trim(dtm, min_docfreq = 50)
+      res1 <- rainette(dtm, k = ", graphInput()$k_number, ", min_segment_size = 50, min_split_members = 100)"
+    )
+    showModal(
+      modalDialog(
+        title = gettext("Codigo R"), size = "l",
+        HTML(paste0(
+          "Codigo em R da sistematização da clusterização :",
+          "<pre><code>",
+          paste(highr::hi_html(codigo), collapse = "\n"),
+          "</code></pre>"
+        )),
+        easyClose = TRUE
+      )
+    )
+  })
+
+
   observe({
     selected_tab <- input$cluster_tabs
 
@@ -207,6 +232,12 @@ server <- function(input, output, session)
       shinyjs::removeClass(selector = "#main_panel", class = "expanded-panel")  # Restaure o tamanho original
     }
   })
+
+  output$cluster_exist <- reactive({
+    return(!is.null(graphInput()))
+  })
+
+  outputOptions(output, "cluster_exist", suspendWhenHidden = FALSE)
 
   ###########################################################################
   # GRAFICOS DE REDE ########################################################

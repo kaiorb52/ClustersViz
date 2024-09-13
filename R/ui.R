@@ -148,6 +148,16 @@ ui <- fluidPage(
                 max = 16
               ),
               actionButton("run_cluster_graph", "Gerar Clusters"),
+              conditionalPanel(
+                condition = "output.cluster_exist == true",
+                hr(),
+                hr(),
+                actionButton("get_r_code",
+                  class = "btn-success",
+                  icon = icon("code"),
+                  label = gettext("Codigo R")
+                )
+              )
             ),
             conditionalPanel(
               condition = "input.cluster_tabs == 'Exploração dos Clusters'",
