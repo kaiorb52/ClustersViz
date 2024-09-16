@@ -1,13 +1,22 @@
-
 # server.R
 
-server <- function(input, output, session)
-{
+server <- function(input, output, session) {
   ###########################################################################
   # DADOS ###################################################################
   ###########################################################################
 
-  rv <- reactiveValues(df = NULL, file_name = NULL, corpus = NULL, corpus_slipt = NULL, texto = NULL, data_plots = NULL)
+  rv <- reactiveValues(
+    df               = NULL,
+    file_name        = NULL,
+    corpus           = NULL,
+    corpus_slipt     = NULL,
+    texto            = NULL,
+    N                = NULL,
+    data_plots       = NULL,
+    listas_k_data    = NULL,
+    data_plots       = NULL,
+    dados_plot_nuvem = NULL
+  )
 
   volumes <- getVolumes()()
   shinyFileChoose(input, "browser", roots = volumes, session = session)
@@ -23,22 +32,21 @@ server <- function(input, output, session)
 
       rv$file_name <- basename(file_path)
 
-      if (grepl(".csv", file_path)){
+      if (grepl(".csv", file_path)) {
         rv$df <- data.table::fread(file_path, encoding = "Latin-1")
       }
 
-      if (grepl(".xlsx", file_path)){
+      if (grepl(".xlsx", file_path)) {
         rv$df <- openxlsx::read.xlsx(file_path)
       }
 
-      if (grepl(".rds", file_path)){
+      if (grepl(".rds", file_path)) {
         rv$df <- readRDS(file_path)
       }
 
-      if (!grepl(".(csv|xlsx|rds)", file_path)){
+      if (!grepl(".(csv|xlsx|rds)", file_path)) {
         message("Tipo de arquivo não suportado...")
       }
-
     }
   })
 
@@ -46,25 +54,21 @@ server <- function(input, output, session)
     file_selected <- input$r_envi_df
 
     if (!is.null(file_selected)) {
-
       print(file_selected)
 
       rv$file_name <- file_selected
 
       rv$df <- get(file_selected, envir = globalenv())
-
     }
   })
 
   observeEvent(input$import_googlesheets, {
-
     url <- input$url_googlesheets
 
     sheet_info <- googledrive::drive_get(url)
     rv$file_name <- sheet_info$name
 
     rv$df <- googlesheets4::read_sheet(url)
-
   })
 
 
@@ -109,14 +113,15 @@ server <- function(input, output, session)
   observeEvent(input$run_lemmatizar, {
     df <- rv$df
 
-    coluna_id <- input$coluna_id
-    coluna_texto <- input$coluna_texto
+    # W.I.P - resvisar tudo dps
 
-    df <- df |>
-      lemmatização(coluna_texto = coluna_texto, coluna_id = coluna_id)
+    # coluna_id <- input$coluna_id
+    # coluna_texto <- input$coluna_texto
+    #
+    # df <- df |>
+    #   lemmatização(coluna_texto = coluna_texto, coluna_id = coluna_id)
 
     rv$df <- df
-
   })
 
   observeEvent(input$run_corpus_split, {
@@ -127,9 +132,9 @@ server <- function(input, output, session)
     print(paste("Segment Size:", input$segment_size))
 
     corpus_slipt_result <- corpus_slipt(
-      df = rv$df,
-      texto = input$texto,
-      segment_size = input$segment_size
+      df            = rv$df,
+      texto         = input$texto,
+      segment_size  = input$segment_size
     )
 
     print("Corpus split finalizado...")
@@ -137,7 +142,6 @@ server <- function(input, output, session)
     rv$corpus <- corpus_slipt_result[["corpus"]]
     rv$corpus_slipt <- corpus_slipt_result[["corpus_slipt"]]
     rv$texto <- input$texto
-
   })
 
   output$corpus_slipt_exist <- reactive({
@@ -151,7 +155,6 @@ server <- function(input, output, session)
   ###########################################################################
 
   graphInput <- eventReactive(input$run_cluster_graph, {
-
     corpus_slipt <- rv$corpus_slipt
 
     lista_cluster <- clusterização(corpus_slipt, input$k)
@@ -223,13 +226,14 @@ server <- function(input, output, session)
   observe({
     selected_tab <- input$cluster_tabs
 
-    # Esconda o sidebarPanel quando a aba "Documentos dos Clusters" estiver ativa
     if (selected_tab == "Documentos dos Clusters") {
-      shinyjs::hide(id = "sidebar")
-      shinyjs::addClass(selector = "#main_panel", class = "expanded-panel")  # Expanda o mainPanel
+      shinyjs::hide(id = "sidebar")  # Esconde o sidebar
+      shinyjs::removeClass(selector = "#main_panel", class = "mainPanelNormal")
+      shinyjs::addClass(selector = "#main_panel", class = "mainPanelExpanded")  # Expande o mainPanel
     } else {
-      shinyjs::show(id = "sidebar")
-      shinyjs::removeClass(selector = "#main_panel", class = "expanded-panel")  # Restaure o tamanho original
+      shinyjs::show(id = "sidebar")  # Mostra o sidebar
+      shinyjs::removeClass(selector = "#main_panel", class = "mainPanelExpanded")
+      shinyjs::addClass(selector = "#main_panel", class = "mainPanelNormal")  # Retorna à largura normal
     }
   })
 
@@ -249,46 +253,78 @@ server <- function(input, output, session)
     print("Gerando graficos...")
 
     df_lemmatizado <- criar_df_lemmatizado(
-      df = rv$df,
+      df                = rv$df,
       texto_lemmatizado = rv$texto,
-      corpus = rv$corpus,
-      corpus_slipt = rv$corpus_slipt,
-      res1 = graphInput()$res1,
-      k_number = graphInput()$k_number
+      corpus            = rv$corpus,
+      corpus_slipt      = rv$corpus_slipt,
+      res1              = graphInput()$res1,
+      k_number          = graphInput()$k_number
     )
 
-    listas_k <- listas_k(df = df_lemmatizado, k = graphInput()$k_number)
+    listas_k_data <- listas_k(
+      df                = df_lemmatizado,
+      k                 = graphInput()$k_number,
+      texto             = rv$texto,
+    )
+
+    rv$N <- seq_len(length(listas_k_data))
+
+    termo <- tolower(input$termo)
+
+    if (termo %in% c("true", "", " ", "  ")){
+      termo <- TRUE
+    } else {
+      termo <- input$termo
+    }
+
+    termos_remove <- strsplit(input$termos_remove, ",\\s*")[[1]]
 
     rv$data_plots <- data_plot(
-      list_clusters = listas_k,
-      texto_lemmatizado_var = rv$texto,
-      coocTerm = input$coocTerm,
-      numberOfCoocs = input$numberOfCoocs,
-      termos_remove = ""
+      lista_data             = listas_k_data,
+      texto_var              = rv$texto,
+      termo                  = termo,
+      numberOfCoocs          = input$numberOfCoocs,
+      termos_remove          = termos_remove,
+      all                    = FALSE
     )
 
-    print("Graficos de rede gerados")
+    rv$dados_plot_nuvem <- listas_k_data
 
-    print("Graficos de Nuvem de palavras gerados")
+    print("Graficos prontos")
+  })
+
+  observeEvent(rv$data_plots, {
+    req(rv$data_plots)
+
+    updateSelectInput(session, "pallete",
+      choices = palletas
+    )
+    updateSelectInput(session, "selected_cluster",
+      choices = paste0("clust_", rv$N)
+    )
   })
 
   output$networkPlot <- renderVisNetwork({
+    req(rv$data_plots)
+    req(input$selected_cluster)
 
     data_grafs <- rv$data_plots
     selected_cluster <- input$selected_cluster
 
-    gerador_plot(data_grafs[[selected_cluster]], name = selected_cluster, coocTerm = "Reforma")
+    gerador_plot(
+      graphNetwork            = data_grafs[[selected_cluster]]$graphNetwork,
+      coocTerm                = data_grafs[[selected_cluster]]$coocTerm,
+      pallete                 = input$pallete
+    )
 
   })
 
-  output$wordcloudPlot <- renderPlot({
-    data_grafs <- rv$data_plots
-    selected_cluster <- input$selected_cluster
+  output$wordcloudPlot <- renderWordcloud2({
+    req(rv$data_plots)
+    req(input$selected_cluster)
 
-    # Gerando a nuvem de palavras para o cluster selecionado
-    gerar_nuvem(data_grafs[[selected_cluster]])
+    wordcloud_data <- rv$dados_plot_nuvem[[input$selected_cluster]]$word_freq
+
+    nuvem_plot(data = wordcloud_data, pallete = input$pallete)
   })
-
-
 }
-

@@ -1,4 +1,3 @@
-
 # rainette.R
 # by juba
 # url: <>
@@ -66,7 +65,6 @@ span.hl.com { color: #888; font-style: italic;}
 ## Cluster documents sample UI
 
 docs_sample_ui <- function(id, res) {
-
   show_merged_segments <- !inherits(res, "rainette2") &&
     !is.null(res$call$min_segment_size) && res$call$min_segment_size > 1
 
@@ -101,11 +99,13 @@ docs_sample_ui <- function(id, res) {
       id = "docs",
       fillCol(
         flex = c(NA, 1),
-        div(id = "docs_sample_intro",
-            htmlOutput(ns("docs_sample_intro"))
+        div(
+          id = "docs_sample_intro",
+          htmlOutput(ns("docs_sample_intro"))
         ),
-        div(id = "docs_sample",
-            htmlOutput(ns("docs_sample"))
+        div(
+          id = "docs_sample",
+          htmlOutput(ns("docs_sample"))
         )
       )
     )
@@ -119,14 +119,13 @@ docs_sample_server <- function(id, res, corpus_src, current_k) {
   moduleServer(
     id,
     function(input, output, session) {
-
       ## Cluster selection slider
       output$group_ui <- renderUI({
         ns <- session$ns
         selectInput(ns("cluster"),
-                    label = "Cluster",
-                    selected = 1,
-                    choices = seq_len(current_k)
+          label = "Cluster",
+          selected = 1,
+          choices = seq_len(current_k)
         )
       })
 
@@ -222,7 +221,6 @@ docs_sample_server <- function(id, res, corpus_src, current_k) {
 
       ## Sample cluster documents introducation phrase
       output$docs_sample_intro <- renderUI({
-
         if (is.null(corpus_src)) {
           return(
             HTML("<p>Can't display documents : <tt>corpus_src</tt> is null.</p><p>Please rerun <tt>rainette_explor</tt> with your quanteda corpus object as third parameter : something like <tt>rainette_explor(res, dtm, corpus)</tt>.</p>")

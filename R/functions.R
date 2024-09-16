@@ -1,4 +1,3 @@
-
 # functions.R
 
 source("R/calculateCoocStatistics.R")
@@ -7,15 +6,16 @@ source("R/calculateCoocStatistics.R")
 # DADOS ####################################################################
 ############################################################################
 
-r_environment <- function(){ls(envir = .GlobalEnv)}
+r_environment <- function() {
+  ls(envir = .GlobalEnv)
+}
 
 
 ############################################################################
 # CLUSTERS #################################################################
 ############################################################################
 
-lemmatização <- function(base, coluna_texto, coluna_id)
-{
+lemmatização <- function(base, coluna_texto, coluna_id) {
   # EXEMPLO:
   #
   # reforma_tributaria_f <- reforma_tributaria |>
@@ -59,11 +59,12 @@ lemmatização <- function(base, coluna_texto, coluna_id)
 }
 
 
-corpus_slipt <- function(df, texto, segment_size)
-{
-
-  # df <- df[!is.na(df[texto]), ]
-  # df <- df %>% dplyr::filter(texto != "nan")
+corpus_slipt <- function(df, texto, segment_size) {
+  # EXEMPLO:
+  #
+  # corpus_list <- reforma_tributaria |>
+  #   corpus_slipt(texto = "texto_lemmatizado_limpo", segment_size = 50)
+  #
 
   corpus <- corpus(df, text_field = texto)
   corpus_slipt <- split_segments(corpus, segment_size = segment_size)
@@ -74,12 +75,13 @@ corpus_slipt <- function(df, texto, segment_size)
   )
 
   return(lista)
-
 }
 
 
-clusterização <- function(corpus_split, k)
-{
+clusterização <- function(corpus_split, k) {
+  # EXEMPLO:
+  #
+  # cluster_list <- clusterização(corpus_split = corpus_split, k = 16)
 
   dtm <- dfm(tokens(corpus_split))
   dtm <- dfm_trim(dtm, min_docfreq = 50)
@@ -95,7 +97,7 @@ clusterização <- function(corpus_split, k)
     "corpus_split" = corpus_split,
     "k_number" = k,
     "tab" = tab
-    )
+  )
 
   return(lista)
 }
@@ -106,8 +108,7 @@ clusterização <- function(corpus_split, k)
 ###########################################################################
 
 
-criar_df_lemmatizado <- function(df, texto_lemmatizado, corpus, corpus_slipt, res1, k_number){
-
+criar_df_lemmatizado <- function(df, texto_lemmatizado, corpus, corpus_slipt, res1, k_number) {
   corpus_slipt$clusters <- cutree(res1, k = k_number)
 
   textos <- sapply(corpus, as.character)
@@ -130,9 +131,11 @@ criar_df_lemmatizado <- function(df, texto_lemmatizado, corpus, corpus_slipt, re
 }
 
 
-listas_k <- function(df, k){
+listas_k <- function(df, k, texto_var, termos_remove = "") {
 
-  lista = list()
+  set.seed(99)
+
+  lista <- list()
 
   df_max <- df |>
     pivot_longer(cols = starts_with("clust")) |>
@@ -140,12 +143,52 @@ listas_k <- function(df, k){
     filter(value == max(value)) |>
     ungroup()
 
-  for (i in seq_len(k)){
-
+  for (i in seq_len(k)) {
     clust_nome <- paste0("clust_", i)
 
-    lista[[clust_nome]] <- df_max |>
-    filter(name == clust_nome)
+    df_cluster <- df_max |>
+      filter(name == clust_nome)
+
+    corpus <- corpus(df_cluster[[texto_var]])
+
+    dfm <- dfm(tokens(corpus))
+
+    corpus_tokens <- corpus |>
+      tokens(remove_punct = TRUE, remove_numbers = TRUE, remove_symbols = TRUE) %>%
+      tokens_tolower()
+
+    sotu_collocations <- quanteda.textstats::textstat_collocations(corpus_tokens, min_count = 5)
+
+    corpus_tokens2 <- tokens_compound(corpus_tokens, sotu_collocations)
+
+    dtm2 <- dfm(corpus_tokens2)
+
+    binDTM <- dtm2 |>
+      dfm_remove(termos_remove) |>
+      dfm_remove(stopwords("pt")) |>
+      dfm_remove(pattern = "[[:punct:]]") |>
+      dfm_trim(min_docfreq = 10, max_docfreq = 100000L) %>%
+      dfm_weight(scheme = "boolean")
+
+    word_freq <- data.frame(
+      word = featnames(binDTM),
+      freq = colSums(binDTM)
+    )
+
+    word_freq |>
+      arrange(desc(freq)) |>
+      head(3) |>
+      print()
+
+    top_word <- word_freq |>
+      arrange(desc(freq)) |>
+      head(1) |>
+      pull(word)
+
+
+    lista[[clust_nome]]$binDTM <- binDTM
+    lista[[clust_nome]]$word_freq <- word_freq
+    lista[[clust_nome]]$top_word <- top_word
 
   }
 
@@ -154,55 +197,33 @@ listas_k <- function(df, k){
 
 
 data_plot <- function(
-    list_clusters,
-    texto_lemmatizado_var,
-    coocTerm,
-    numberOfCoocs,
-    termos_remove
-){
+    lista_data,
+    texto_var,
+    termo,
+    numberOfCoocs = 15,
+    termos_remove,
+    all = FALSE) {
 
-  #load("src/calculateCoocStatistics")
-  nova_lista = list()
+  nova_lista <- list()
 
-  for (x in names(list_clusters)){
+  for (x in names(lista_data)) {
+    print("Analisando Dados....")
 
-    print("Analisando dados...")
+    print(x)
 
-    df <- list_clusters[[x]]
-    corpus <- corpus(df[[texto_lemmatizado_var]])
+    binDTM <- lista_data[[x]]$binDTM
 
-    print("Corpus rodou...")
+    if (termo == TRUE) {
+      coocTerm <- lista_data[[x]]$top_word
 
-    corpus_tokens <- corpus |>
-      tokens(remove_punct = TRUE, remove_numbers = TRUE, remove_symbols = TRUE) %>%
-      tokens_tolower()
+    } else if (!is.null(termo) & termo != TRUE) {
+      coocTerm <- termo
 
-    print("Corpus tokens rodou..")
+    }
 
-    sotu_collocations <- quanteda.textstats::textstat_collocations(corpus_tokens, min_count = 15)
-    #sotu_collocations <- sotu_collocations[1:150, ]
+    print(coocTerm)
 
-    print("sotou collaction rodou..")
-
-    corpus_tokens2 <- tokens_compound(corpus_tokens, sotu_collocations)
-
-    dtm <- dfm(corpus_tokens2)
-
-    binDTM <- dtm |>
-      dfm_remove(termos_remove) |>
-      dfm_remove(stopwords("pt")) |>
-      dfm_remove(pattern = "[[:punct:]]") |>
-      dfm_trim(min_docfreq = 10, max_docfreq = 1000L) %>%
-      dfm_weight(scheme = "boolean")
-
-    print("binDTM rodou..")
-
-    #term_freq <- colSums(binDTM)
-
-    coocs <- calculateCoocStatistics(coocTerm, binDTM, measure="LOGLIK")
-
-    print("coocs rodou..")
-
+    coocs <- calculateCoocStatistics(coocTerm, binDTM, measure = "LOGLIK")
 
     resultGraph <- data.frame(from = character(), to = character(), sig = numeric(0))
 
@@ -214,11 +235,9 @@ data_plot <- function(
 
     resultGraph <- rbind(resultGraph, tmpGraph)
 
-    print("resultGraph rodou..")
-
-    for (i in 1:numberOfCoocs){
+    for (i in 1:numberOfCoocs) {
       newCoocTerm <- names(coocs)[i]
-      coocs2 <- calculateCoocStatistics(newCoocTerm, binDTM, measure="LOGLIK")
+      coocs2 <- calculateCoocStatistics(newCoocTerm, binDTM, measure = "LOGLIK")
 
       tmpGraph <- data.frame(from = character(), to = character(), sig = numeric(0))
       tmpGraph[1:numberOfCoocs, 3] <- coocs2[1:numberOfCoocs]
@@ -230,36 +249,79 @@ data_plot <- function(
     }
 
     graphNetwork <- graph_from_data_frame(resultGraph, directed = FALSE)
-    graphNetwork <- simplify(graphNetwork, remove.multiple = FALSE, remove.loops = TRUE)
 
-    verticesToRemove <- V(graphNetwork)[degree(graphNetwork) < 2]
-    graphNetwork <- delete.vertices(graphNetwork, verticesToRemove)
-    # pode ser interessante as vezes deixar essas duas linhas comentadas...
 
-    nova_lista[[x]] <- graphNetwork
+    graphNetwork <- tryCatch({
+      simplify(graphNetwork, remove.multiple = FALSE, remove.loops = TRUE)
 
+    }, error = function(e) {
+      message("Erro ao remover múltiplos e loops. Tentando simplificar sem argumentos adicionais.")
+      simplify(graphNetwork)
+
+    })
+
+    if (all == FALSE) {
+      verticesToRemove <- V(graphNetwork)[degree(graphNetwork) < 2]
+      graphNetwork <- delete.vertices(graphNetwork, verticesToRemove)
+    }
+
+    nova_lista[[x]]$graphNetwork <- graphNetwork
+    nova_lista[[x]]$coocTerm <- coocTerm
   }
 
-
-  print(nova_lista)
-
   print("Analise pronta...")
-
-
 
   return(nova_lista)
 }
 
 
-gerador_plot <- function(graphNetwork, coocTerm, name){
+gerador_plot <- function(graphNetwork, coocTerm, pallete = "default") {
+
+  E(graphNetwork)$color <- "darkgrey"
+  E(graphNetwork)$width <- rescale(E(graphNetwork)$sig, to = c(0.3, 15))
+  V(graphNetwork)$size <- rescale(log(degree(graphNetwork)), to = c(5, 60))
+
+  if (pallete == "default") {
+    V(graphNetwork)$color <- ifelse(tolower(V(graphNetwork)$name) == tolower(coocTerm), "cornflowerblue", "orange")
+  }
 
 
-  # Configurar cores e tamanhos dos nós e arestas
-  #V(graphNetwork)$color <- ifelse(V(graphNetwork)$name == coocTerm, 'cornflowerblue', 'orange')
-  V(graphNetwork)$color <- ifelse(tolower(V(graphNetwork)$name) == tolower(coocTerm), 'cornflowerblue', 'orange')
-  E(graphNetwork)$color <- "DarkGray"
-  E(graphNetwork)$width <- rescale(E(graphNetwork)$sig, to = c(1, 10))
-  V(graphNetwork)$size <- rescale(log(degree(graphNetwork)), to = c(5, 15))
+  if (pallete == "rep_dem") {
+    V(graphNetwork)$color <- ifelse(tolower(V(graphNetwork)$name) == tolower(coocTerm), "steelblue", "tomato")
+
+    vizinhos_central <- neighbors(graphNetwork, V(graphNetwork)[name == coocTerm])
+    V(graphNetwork)$color[vizinhos_central] <- "skyblue"
+
+    V(graphNetwork)$color <- ifelse(V(graphNetwork)$size <= 15, "red", V(graphNetwork)$color)
+  }
+
+  if (pallete == "YlGn") {
+    V(graphNetwork)$color <- ifelse(tolower(V(graphNetwork)$name) == tolower(coocTerm), "#006837", "#addd8e")
+
+    vizinhos_central <- neighbors(graphNetwork, V(graphNetwork)[name == coocTerm])
+    V(graphNetwork)$color[vizinhos_central] <- "#41ab5d"
+
+    V(graphNetwork)$color <- ifelse(V(graphNetwork)$size <= 15, "#f7fcb9", V(graphNetwork)$color)
+  }
+
+  if (pallete == "RdYlGn") {
+    V(graphNetwork)$color <- ifelse(tolower(V(graphNetwork)$name) == tolower(coocTerm), "#1a9850", "#f46d43")
+
+    vizinhos_central <- neighbors(graphNetwork, V(graphNetwork)[name == coocTerm])
+    V(graphNetwork)$color[vizinhos_central] <- "#66bd63"
+
+    V(graphNetwork)$color <- ifelse(V(graphNetwork)$size <= 15, "#d73027", V(graphNetwork)$color)
+  }
+
+  if (pallete == "YlGnBu") {
+    V(graphNetwork)$color <- ifelse(tolower(V(graphNetwork)$name) == tolower(coocTerm), "#253494", "#7fcdbb")
+
+    vizinhos_central <- neighbors(graphNetwork, V(graphNetwork)[name == coocTerm])
+    V(graphNetwork)$color[vizinhos_central] <- "#1d91c0"
+
+    V(graphNetwork)$color <- ifelse(V(graphNetwork)$size <= 15, "#edf8b1", V(graphNetwork)$color)
+  }
+
 
   # Converter o gráfico igraph para um formato que o visNetwork entende
   nodes <- data.frame(
@@ -270,8 +332,8 @@ gerador_plot <- function(graphNetwork, coocTerm, name){
   )
 
   edges <- data.frame(
-    from = as.character(ends(graphNetwork, es = E(graphNetwork), names = TRUE)[,1]),
-    to = as.character(ends(graphNetwork, es = E(graphNetwork), names = TRUE)[,2]),
+    from = as.character(ends(graphNetwork, es = E(graphNetwork), names = TRUE)[, 1]),
+    to = as.character(ends(graphNetwork, es = E(graphNetwork), names = TRUE)[, 2]),
     color = E(graphNetwork)$color,
     width = E(graphNetwork)$width
   )
@@ -279,27 +341,70 @@ gerador_plot <- function(graphNetwork, coocTerm, name){
   # Gerar o plot interativo com visNetwork
   visNetwork(nodes, edges) %>%
     visLayout(randomSeed = 100) %>%
-    visNodes(shape = "dot", font = list(size = 12)) %>%
+    visNodes(
+      shape = "dot",
+      font = list(size = 25, face = "Arial", color = "black"), # Aumentar o tamanho da fonte
+      scaling = list(label = list(enabled = TRUE))             # Escalar os rótulos proporcionalmente ao tamanho dos nós
+    ) %>%
     visEdges(smooth = FALSE) %>%
-    visOptions(highlightNearest = list(enabled = TRUE, degree = 1, hover = TRUE),
-               nodesIdSelection = list(enabled = TRUE)) %>%
+    visOptions(
+      highlightNearest = list(enabled = TRUE, degree = 1, hover = TRUE),
+      nodesIdSelection = list(enabled = TRUE)
+    ) %>%
     visInteraction(navigationButtons = TRUE) %>%
-    visPhysics(stabilization = FALSE) #%>%
-  #visTitle(paste(name, "Graph"))
+    # Configurar física para espaçamento dos nós
+    visPhysics(
+      solver = "forceAtlas2Based",    # Algoritmo que melhora o espaçamento dos nós
+      forceAtlas2Based = list(
+        gravitationalConstant = -200, # Aumentar valor negativo para espaçar mais
+        centralGravity = 0.01,        # Controlar a gravidade central
+        springLength = 200,           # Aumentar o comprimento das "molas" entre nós
+        springConstant = 0.08
+      ),                              # Controlar a rigidez das "molas"
+      stabilization = FALSE,
+      repulsion = list(
+        nodeDistance = 300,            # Distância mínima entre os nós
+        centralGravity = 0.01,
+        springLength = 100,
+        damping = 0.09
+      )
+    )
 }
 
+nuvem_plot <- function(data, pallete = "default"){
 
-gerar_nuvem <- function(df_cluster, max_palavras = 100) {
-  # df_cluster é o dataframe com as palavras e suas frequências
-  palavras <- df_cluster$termo  # Substitua por sua coluna de termos
-  frequencias <- df_cluster$frequencia  # Substitua por sua coluna de frequências
+  if (pallete == "rep_dem") {
+    colorVec = rep(c('red', 'tomato', 'skyblue', 'steelblue'), length.out = nrow(demoFreq))
+  }
 
-  # Gerando a nuvem de palavras
-  wordcloud(
-    palavras,
-    frequencias,
-    scale = c(4, 0.5),  # Ajuste o tamanho das palavras
-    max.words = max_palavras,
-    colors = brewer.pal(8, "Dark2")
+  if (pallete == "YlGn") {
+    colorVec = rep(c('#addd8e', '#78c679', '#238443', '#004529'), length.out = nrow(demoFreq))
+  }
+
+  if (pallete == "RdYlGn") {
+    colorVec = rep(c('#d73027', '#fdae61', '#a6d96a', '#1a9850'), length.out = nrow(demoFreq))
+  }
+
+  if (pallete == "YlGnBu") {
+    colorVec = rep(c('#c7e9b4', '#41b6c4', '#225ea8', '#081d58'), length.out = nrow(demoFreq))
+  }
+
+  if (pallete == "default") {
+    colorVec <- "random-light"
+  }
+
+  data_desc <- data |>
+    arrange(desc(freq))
+
+  set.seed(99)
+  wordcloud2(
+    data_desc,
+    color = colorVec,
+    shuffle = FALSE,
+    size = 0.5,
+    rotateRatio = 0,
+    shape = "circle",
   )
 }
+
+palletas <- c("default", "rep_dem", "YlGn", "RdYlGn", "YlGnBu")

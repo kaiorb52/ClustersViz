@@ -1,4 +1,3 @@
-
 # init.R
 # R version 4.4.1 (2024)
 
@@ -14,7 +13,6 @@
 #
 # ===========================================================================
 
-ClusterViz <- function()
-{
+ClusterViz <- function() {
   shinyApp(ui = ui, server = server)
 }

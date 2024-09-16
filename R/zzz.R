@@ -1,8 +1,6 @@
-
 # zzz.R
 
 .onLoad <- function(libname, pkgname) {
-
   library(shiny)
   library(shinyBS)
   library(shinythemes)
@@ -37,7 +35,6 @@
   library(shinythemes)
   library(miniUI)
 
-  library(wordcloud)
+  library(wordcloud2)
   library(RColorBrewer)
-
 }
