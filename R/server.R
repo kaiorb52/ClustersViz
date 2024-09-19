@@ -222,18 +222,15 @@ server <- function(input, output, session) {
     )
   })
 
-
   observe({
     selected_tab <- input$cluster_tabs
 
     if (selected_tab == "Documentos dos Clusters") {
-      shinyjs::hide(id = "sidebar")  # Esconde o sidebar
-      shinyjs::removeClass(selector = "#main_panel", class = "mainPanelNormal")
-      shinyjs::addClass(selector = "#main_panel", class = "mainPanelExpanded")  # Expande o mainPanel
+      shinyjs::hide(id = "sidebar")
+      shinyjs::addClass(selector = "#main_panel", class = "expanded-panel")  # Expanda o mainPanel
     } else {
-      shinyjs::show(id = "sidebar")  # Mostra o sidebar
-      shinyjs::removeClass(selector = "#main_panel", class = "mainPanelExpanded")
-      shinyjs::addClass(selector = "#main_panel", class = "mainPanelNormal")  # Retorna à largura normal
+      shinyjs::show(id = "sidebar")
+      shinyjs::removeClass(selector = "#main_panel", class = "expanded-panel")  # Restaure o tamanho original
     }
   })
 

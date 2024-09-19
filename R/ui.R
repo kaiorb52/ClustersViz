@@ -3,16 +3,16 @@
 ui <- fluidPage(
   theme = shinytheme("sandstone"),
   useShinyjs(),
+
   tags$head(
     tags$style(HTML("
-      #mainPanelExpanded {
+      .expanded-panel {
         width: 100% !important;  /* Expande o mainPanel */
       }
-      #mainPanelNormal {
-        width: 70% !important;  /* Largura normal do mainPanel */
-      }
     "))
-  ),  navbarPage(
+  ),
+
+  navbarPage(
     title = "CLUSTERS VIZ", position = "static-top",
     ###########################################################################
     # DADOS ###################################################################
@@ -53,7 +53,7 @@ ui <- fluidPage(
               inputId = "r_envi_df",
               choices = r_environment()
             ),
-            actionButton(inputId = "import_r_envi", label = "Importar dados"),
+            actionButton(inputId = "import_r_envi", label = "Importar dados (csv, xlsx, rds)"),
             actionButton(inputId = "refresh_r_envi", label = "Refresh", icon = icon("sync-alt"))
           ),
           tabPanel("Google Sheets",
@@ -177,18 +177,17 @@ ui <- fluidPage(
           mainPanel(
             id = "main_panel",
             class = "mainPanelNormal",
+
             tabsetPanel(
               id = "cluster_tabs",
-              tabPanel(
-                "Manipulação dos Clusters",
+
+              tabPanel("Manipulação dos Clusters",
                 htmlOutput("cluster_tab")
               ),
-              tabPanel(
-                "Exploração dos Clusters",
+              tabPanel("Exploração dos Clusters",
                 plotOutput("rainette_plot")
               ),
-              tabPanel(
-                "Documentos dos Clusters",
+              tabPanel("Documentos dos Clusters",
                 uiOutput("dynamic_docs_ui")
               ),
             )

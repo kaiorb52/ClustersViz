@@ -1,6 +1,6 @@
 # rainette.R
 # by juba
-# url: <>
+# url: <https://github.com/juba/rainette/blob/7bbd2f252592c58e8c0a7f133e66730455307935/R/shiny.R>
 
 rainette_explor_css <- function() {
   "
