@@ -130,7 +130,7 @@ server <- function(input, output, session) {
 
   observeEvent(input$run_corpus_split, {
     print("Rodando corpus split...")
-    shiny::showNotification("Rodando corpus split...")
+    shiny::showNotification("Rodando corpus split...", type = "message")
 
     # Adicione mais informações de depuração
     print(paste("Texto:", input$texto))
@@ -163,6 +163,9 @@ server <- function(input, output, session) {
   graphInput <- eventReactive(input$run_cluster_graph, {
 
     tryCatch({
+      shiny::showNotification("Gerando Clusters...", type = "message")
+      print("Gerando Clusters...")
+
       corpus_slipt <- rv$corpus_slipt
 
       lista_cluster <- clusterização(
@@ -174,6 +177,7 @@ server <- function(input, output, session) {
         )
 
       shiny::showNotification("Clusters gerados", type = "message")
+      print("Clusters gerados")
 
       lista_cluster
     }, error = function(e) {
@@ -348,4 +352,21 @@ server <- function(input, output, session) {
 
     nuvem_plot(data = wordcloud_data, pallete = input$pallete)
   })
+
+  output$wordtreePlot <- renderUI({
+    req(rv$data_plots)
+    req(input$selected_cluster)
+
+    wordtree_data <- rv$dados_plot_nuvem[[input$selected_cluster]]$text
+
+    html_tree <- wordtree(
+      wordtree_data,
+      targetWord   = tolower(input$termo),
+      direction    = "suffix",
+      Number_words = 5
+    )
+
+    HTML(html_tree)
+  })
+
 }

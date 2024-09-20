@@ -250,6 +250,10 @@ ui <- fluidPage(
               tabPanel(
                 "Grafico de Nuvem",
                 wordcloud2Output("wordcloudPlot", height = "600px") # Alterado para exibir o wordcloud2
+              ),
+              tabPanel(
+                "Grafico de Arvore de palavras",
+                uiOutput("wordtreePlot")
               )
             )
           )

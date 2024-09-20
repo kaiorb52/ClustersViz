@@ -185,10 +185,10 @@ listas_k <- function(df, k, texto_var, termos_remove = "") {
       head(1) |>
       pull(word)
 
-
-    lista[[clust_nome]]$binDTM <- binDTM
+    lista[[clust_nome]]$text      <- df_cluster[[texto_var]]
+    lista[[clust_nome]]$binDTM    <- binDTM
     lista[[clust_nome]]$word_freq <- word_freq
-    lista[[clust_nome]]$top_word <- top_word
+    lista[[clust_nome]]$top_word  <- top_word
 
   }
 
