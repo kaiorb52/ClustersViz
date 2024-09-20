@@ -78,14 +78,14 @@ corpus_slipt <- function(df, texto, segment_size) {
 }
 
 
-clusterização <- function(corpus_split, k) {
+clusterização <- function(corpus_split, k, min_docfreq = 50, min_segment_size = 50, min_split_members = 100) {
   # EXEMPLO:
   #
   # cluster_list <- clusterização(corpus_split = corpus_split, k = 16)
 
   dtm <- dfm(tokens(corpus_split))
-  dtm <- dfm_trim(dtm, min_docfreq = 50)
-  res1 <- rainette(dtm, k = k, min_segment_size = 50, min_split_members = 100)
+  dtm <- dfm_trim(dtm, min_docfreq = min_docfreq)
+  res1 <- rainette(dtm, k = k, min_segment_size = 50, min_split_members = min_split_members)
 
   cluster_assignments <- cutree(res1, k = k)
 

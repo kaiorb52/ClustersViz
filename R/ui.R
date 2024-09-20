@@ -81,7 +81,8 @@ ui <- fluidPage(
         ),
         hr(),
         actionButton("lemmatizar_corpus_split", "Lemmatização|Corpus split",
-          class = "btn-success"
+          class = "btn-success",
+          icon = icon("chart-bar")
         ),
         bsModal(
           id = "lemmatização_page",
@@ -106,6 +107,7 @@ ui <- fluidPage(
             ),
             tabPanel(
               "Corpus Slipt",
+              icon = icon("chart-bar"),
               selectInput(
                 label = "Coluna com o texto",
                 inputId = "texto",
@@ -151,7 +153,28 @@ ui <- fluidPage(
                 min = 2,
                 max = 16
               ),
-              actionButton("run_cluster_graph", "Gerar Clusters"),
+              shiny::numericInput(
+                inputId = "min_docfreq",
+                label = "min_docfreq",
+                value = 50,
+                min = 1,
+                max = 500
+              ),
+              shiny::numericInput(
+                inputId = "min_segment_size",
+                label = "min_segment_size",
+                value = 50,
+                min = 1,
+                max = 500
+              ),
+              shiny::numericInput(
+                inputId = "min_split_members",
+                label = "min_split_members",
+                value = 100,
+                min = 1,
+                max = 500
+              ),
+              actionButton("run_cluster_graph", "Gerar Clusters", icon = icon("project-diagram")),
               conditionalPanel(
                 condition = "output.cluster_exist == true",
                 hr(),

@@ -34,18 +34,22 @@ server <- function(input, output, session) {
 
       if (grepl(".csv", file_path)) {
         rv$df <- data.table::fread(file_path, encoding = "Latin-1")
+        shiny::showNotification("Dados carregados", type = "message")
       }
 
       if (grepl(".xlsx", file_path)) {
         rv$df <- openxlsx::read.xlsx(file_path)
+        shiny::showNotification("Dados carregados", type = "message")
       }
 
       if (grepl(".rds", file_path)) {
         rv$df <- readRDS(file_path)
+        shiny::showNotification("Dados carregados", type = "message")
       }
 
       if (!grepl(".(csv|xlsx|rds)", file_path)) {
         message("Tipo de arquivo não suportado...")
+        shiny::showNotification("Tipo de arquivo não suportado...", type = "error")
       }
     }
   })
@@ -126,6 +130,7 @@ server <- function(input, output, session) {
 
   observeEvent(input$run_corpus_split, {
     print("Rodando corpus split...")
+    shiny::showNotification("Rodando corpus split...")
 
     # Adicione mais informações de depuração
     print(paste("Texto:", input$texto))
@@ -137,7 +142,8 @@ server <- function(input, output, session) {
       segment_size  = input$segment_size
     )
 
-    print("Corpus split finalizado...")
+    print("Corpus split finalizado")
+    shiny::showNotification("Corpus split finalizado", type = "message")
 
     rv$corpus <- corpus_slipt_result[["corpus"]]
     rv$corpus_slipt <- corpus_slipt_result[["corpus_slipt"]]
@@ -155,11 +161,29 @@ server <- function(input, output, session) {
   ###########################################################################
 
   graphInput <- eventReactive(input$run_cluster_graph, {
-    corpus_slipt <- rv$corpus_slipt
 
-    lista_cluster <- clusterização(corpus_slipt, input$k)
+    tryCatch({
+      corpus_slipt <- rv$corpus_slipt
 
-    lista_cluster
+      lista_cluster <- clusterização(
+          corpus_slipt,
+          k                 = input$k,
+          min_docfreq       = input$min_docfreq,
+          #min_segment_size  = input$min_segment_size,
+          min_split_members = input$min_split_members
+        )
+
+      shiny::showNotification("Clusters gerados", type = "message")
+
+      lista_cluster
+    }, error = function(e) {
+      message("Ocorreu um erro ao gerar o gráfico: ", e$message)
+
+      shiny::showNotification(paste("Erro ao gerar o gráfico:", e$message), type = "error")
+
+      NULL
+    })
+
   })
 
   output$cluster_tab <- renderText({
