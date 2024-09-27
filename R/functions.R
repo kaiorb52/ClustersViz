@@ -108,27 +108,27 @@ clusterização <- function(corpus_split, k, min_docfreq = 50, min_segment_size 
 ###########################################################################
 
 
-criar_df_lemmatizado <- function(df, texto_lemmatizado, corpus, corpus_slipt, res1, k_number) {
-  corpus_slipt$clusters <- cutree(res1, k = k_number)
-
-  textos <- sapply(corpus, as.character)
-
-  doc_texto <- data.frame(doc_id = names(textos), texto = df[[texto_lemmatizado]])
-
-  df_ids <- df |>
-    dplyr::left_join(
-      doc_texto,
-      by = setNames("texto", texto_lemmatizado)
-    )
-
-  df_lemmatizado <- df_ids |>
-    dplyr::left_join(
-      clusters_by_doc_table(corpus_slipt, clust_var = "clusters"),
-      by = "doc_id"
-    )
-
-  return(df_lemmatizado)
-}
+# criar_df_lemmatizado <- function(df, texto_lemmatizado, corpus, corpus_slipt, res1, k_number) {
+#   corpus_slipt$clusters <- cutree(res1, k = k_number)
+#
+#   textos <- sapply(corpus, as.character)
+#
+#   doc_texto <- data.frame(doc_id = names(textos), texto = df[[texto_lemmatizado]])
+#
+#   df_ids <- df |>
+#     dplyr::left_join(
+#       doc_texto,
+#       by = setNames("texto", texto_lemmatizado)
+#     )
+#
+#   df_lemmatizado <- df_ids |>
+#     dplyr::left_join(
+#       clusters_by_doc_table(corpus_slipt, clust_var = "clusters"),
+#       by = "doc_id"
+#     )
+#
+#   return(df_lemmatizado)
+# }
 
 
 listas_k <- function(df, k, texto_var, termos_remove = "") {
@@ -137,17 +137,17 @@ listas_k <- function(df, k, texto_var, termos_remove = "") {
 
   lista <- list()
 
-  df_max <- df |>
-    pivot_longer(cols = starts_with("clust")) |>
-    group_by(doc_id) |>
-    filter(value == max(value)) |>
-    ungroup()
+  # df_max <- df |>
+  #   pivot_longer(cols = starts_with("clust")) |>
+  #   group_by(doc_id) |>
+  #   filter(value == max(value)) |>
+  #   ungroup()
 
   for (i in seq_len(k)) {
     clust_nome <- paste0("clust_", i)
 
-    df_cluster <- df_max |>
-      filter(name == clust_nome)
+    df_cluster <- df |>
+      filter(cluster == i)
 
     corpus <- corpus(df_cluster[[texto_var]])
 
@@ -177,13 +177,11 @@ listas_k <- function(df, k, texto_var, termos_remove = "") {
 
     word_freq |>
       arrange(desc(freq)) |>
-      head(3) |>
-      print()
+      head(3)
 
     top_word <- word_freq |>
       arrange(desc(freq)) |>
-      head(1) |>
-      pull(word)
+      head(1)
 
     lista[[clust_nome]]$text      <- df_cluster[[texto_var]]
     lista[[clust_nome]]$binDTM    <- binDTM
@@ -209,8 +207,6 @@ data_plot <- function(
   for (x in names(lista_data)) {
     print("Analisando Dados....")
 
-    print(x)
-
     binDTM <- lista_data[[x]]$binDTM
 
     if (termo == TRUE) {
@@ -220,8 +216,6 @@ data_plot <- function(
       coocTerm <- termo
 
     }
-
-    print(coocTerm)
 
     coocs <- calculateCoocStatistics(coocTerm, binDTM, measure = "LOGLIK")
 
