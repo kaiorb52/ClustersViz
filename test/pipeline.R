@@ -30,7 +30,7 @@ corpus_list <- corpus_slipt(
 
 cluster <- clusterização(
   corpus_split            = corpus_list[["corpus_slipt"]],
-  k                       = 16
+  k                       = 5
 )
 
 cluster[["corpus_split"]]
