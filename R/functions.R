@@ -181,9 +181,13 @@ listas_k <- function(df, k, texto_var, termos_remove = "") {
 
     top_word <- word_freq |>
       arrange(desc(freq)) |>
-      head(1)
+      head(1) |>
+      pull(word)
+
+    sample <- sample_n(df_cluster, size = 50)
 
     lista[[clust_nome]]$text      <- df_cluster[[texto_var]]
+    lista[[clust_nome]]$top_50_segments <- sample
     lista[[clust_nome]]$binDTM    <- binDTM
     lista[[clust_nome]]$word_freq <- word_freq
     lista[[clust_nome]]$top_word  <- top_word
@@ -214,8 +218,9 @@ data_plot <- function(
 
     } else if (!is.null(termo) & termo != TRUE) {
       coocTerm <- termo
-
     }
+
+    print(coocTerm)
 
     coocs <- calculateCoocStatistics(coocTerm, binDTM, measure = "LOGLIK")
 

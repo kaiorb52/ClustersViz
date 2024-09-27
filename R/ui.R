@@ -43,7 +43,7 @@ ui <- fluidPage(
             icon = icon("folder"),
             br(),
             shinyFilesButton("browser", "Escolha o Arquivo", "Selecione", multiple = FALSE),
-            actionButton(inputId = "import_browser", label = "Importar dados")
+            actionButton(inputId = "import_browser", label = "Importar dados (csv, xlsx, rds)")
           ),
           tabPanel("Ambiente R",
             icon = icon("r-project"),
@@ -53,7 +53,7 @@ ui <- fluidPage(
               inputId = "r_envi_df",
               choices = r_environment()
             ),
-            actionButton(inputId = "import_r_envi", label = "Importar dados (csv, xlsx, rds)"),
+            actionButton(inputId = "import_r_envi", label = "Importar dados"),
             actionButton(inputId = "refresh_r_envi", label = "Refresh", icon = icon("sync-alt"))
           ),
           tabPanel("Google Sheets",

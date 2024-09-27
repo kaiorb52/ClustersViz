@@ -277,23 +277,31 @@ server <- function(input, output, session) {
 
     print("Gerando graficos...")
 
-    df_lemmatizado <- criar_df_lemmatizado(
-      df                = rv$df,
-      texto_lemmatizado = rv$texto,
-      corpus            = rv$corpus,
-      corpus_slipt      = rv$corpus_slipt,
-      res1              = graphInput()$res1,
-      k_number          = graphInput()$k_number
+    # df_lemmatizado <- criar_df_lemmatizado(
+    #   df                = rv$df,
+    #   texto_lemmatizado = rv$texto,
+    #   corpus            = rv$corpus,
+    #   corpus_slipt      = rv$corpus_slipt,
+    #   res1              = graphInput()$res1,
+    #   k_number          = graphInput()$k_number
+    # )
+    #
+
+    clusters  <- cutree(graphInput()$res1, k = graphInput()$k_number)
+
+    df <- data.frame(
+      doc_id = names(graphInput()$corpus_split),
+      texto = sapply(graphInput()$corpus_split, as.character),
+      cluster = clusters
     )
 
     listas_k_data <- listas_k(
-      df                = df_lemmatizado,
+      df                = df,
       k                 = graphInput()$k_number,
-      texto             = rv$texto,
+      texto             = "texto",
     )
 
     rv$N <- seq_len(length(listas_k_data))
-
     termo <- tolower(input$termo)
 
     if (termo %in% c("true", "", " ", "  ")){

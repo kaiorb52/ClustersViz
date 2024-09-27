@@ -48,9 +48,6 @@ p <- rainette_plot(cluster$res1, cluster$dtm, k = cluster$k_number)
 
 cluster[["corpus_split"]]$clusters  <- cutree(cluster$res1, k = cluster$k_number)
 
-cluster[["corpus_split"]]
-cluster[["corpus_split"]]$clusters
-
 df_corpus_clusters <- data.frame(
   doc_id = names(cluster[["corpus_split"]]),
   texto = sapply(cluster[["corpus_split"]], as.character),
@@ -75,16 +72,16 @@ listas_k_data <- listas_k(
 
 data_grafs <- data_plot(
   lista_data       = listas_k_data,
-  texto_var        = "texto_lemmatizado_limpo",
+  texto_var        = "texto",
   termo            = TRUE,
-  numberOfCoocs    = 20,
+  numberOfCoocs    = 15,
   termos_remove    = c("reforma_previdencia"),
-  all              = TRUE
+  all              = FALSE
 )
 
 gerador_plot(
-  graphNetwork     = data_grafs[["clust_3"]]$graphNetwork,
-  coocTerm         = data_grafs[["clust_3"]]$coocTerm
+  graphNetwork     = data_grafs[["clust_1"]]$graphNetwork,
+  coocTerm         = data_grafs[["clust_1"]]$coocTerm
 )
 
 nuvem_plot(data = listas_k_data[["clust_3"]]$word_freq)
