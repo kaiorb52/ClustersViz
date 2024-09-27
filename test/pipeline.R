@@ -87,9 +87,25 @@ gerador_plot(
 nuvem_plot(data = listas_k_data[["clust_3"]]$word_freq)
 
 create_rmd(
+  df_nrows = nrow(reforma_tributaria),
   rainette_plot = p,
+  df_corpus_clusters = df_corpus_clusters,
   df_name = "reforma_previdencia",
   k_data = listas_k_data
 )
 
+listas_k_data$clust_1$top_50_segments |>
+  pull(texto) |>
+  paste0(collapse = " \n ")
 
+# library(wordcloud)
+#
+# words <- listas_k_data$clust_1$word_freq$word
+# frequencies <- listas_k_data$clust_1$word_freq$freq
+#
+# wordcloud(words = words, freq = frequencies,
+#           min.freq = 5,
+#           max.words = 100000,
+#           random.order = FALSE,
+#           colors = brewer.pal(8, "Dark2")
+# )

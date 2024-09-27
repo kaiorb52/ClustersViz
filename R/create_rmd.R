@@ -7,86 +7,99 @@ library(glue)
 #
 # }
 
-create_rmd <- function(rainette_plot, df_name, k_data) {
+create_rmd <- function(df_nrows, df_corpus_clusters, min_docfreq = 50, min_segment_size = 50, min_split_members = 100, rainette_plot, df_name, k_data) {
 
   print("Gerando Relatório...")
 
-  k_number <- length(names(listas_k_data))
+  if (!"ClusterViz_files" %in% dir()){
+    dir.create("ClusterViz_files")
 
-  ggsave(filename = "ClusterViz_files/plot.png")
+  }
 
-  rmd_intro_base <- paste0("---
+
+  corpus_split_nrows   = nrow(df_corpus_clusters)
+  corpus_split_percent = nrow(df_corpus_clusters |> filter(!is.na(cluster))) / nrow(df_corpus_clusters)
+  corpus_split_percent = round(corpus_split_percent * 100, digits = 2)
+
+  tab <- table(df_corpus_clusters$cluster)
+  tab <- as.data.frame(tab) |>
+    mutate(
+      percentuais = paste0(round((Freq/sum(Freq)) * 100, digits = 2), "%")
+    )
+
+
+  k_number <- length(names(k_data))
+  ggsave(plot = rainette_plot, filename = "ClusterViz_files/rainette_plot.png", height = 7, width = 12)
+
+  rmd_head <- "\n---
 title: \"Relatório Automático\"
 author: \"Seu Nome\"
 date: \"`r Sys.Date()`\"
 output: html_document
----
+---\n"
 
-## Introdução
+  rmd_intro <- paste0("\n# Introdução\nForam analisados ", df_nrows, " textos que foram transformados em ", corpus_split_nrows, " segmentos de textos com o critério de . Foram identificados ", k_number, " clusters a partir do seguinte dendograma:\n")
 
-Para a execução dessa análise, são empregados os pacotes Raineette e Quanteda, utilizando do metodo de clusterização hieraquia, na analise de corpus afim de criar agrupamentos. No total, foram gerados ", k_number, " clusters, a partir do data.frame ", df_name, ".\n")
+  dendograma_png <- "\n![](rainette_plot.png)\n"
 
-  plot_png <- "\n![Clusters Rainetteplot](plot.png)\n"
+  rmd_intro_results <- paste0("\nO dendograma acima, é fruto de uma análise hierarquica descendente utilizando a metodologia de Reinert. A quantidade mínima de documentos é de ", min_docfreq,", a quantidade mínima de segmentos por cluster é de ", min_segment_size, " e a quantidade minima para a divização dos segmentos e formação de um novo cluster é ", min_split_members, ". Ao final estes clusters representam ", corpus_split_percent, "%", " segmentos dos ", corpus_split_nrows, " segmentos encontrados na seguinte distribuição.\n")
 
-  rmd_intro_content <- ""
+  rmd_tab <- paste0("\n|  | Frequência | Percentuais |\n", "|---------|------------|------------|\n")
 
-  rmd_results_head <- "\n## Resultados\n"
-  rmd_results <- ""
+  rmd_tab1 <- rmd_tab
 
-  for (k_name in names(k_data)) {
+  for (i in seq_len(k_number)){
+    rmd_tab_content <- glue("| {tab[i, 1]} | {tab[i, 2]} | {tab[i, 3]} |")
 
-    #top_word <- listas_k_data[[k_name]]$top_word
-    tab_rmd  <- listas_k_data[[k_name]]$word_freq
+    rmd_tab1 <- paste0(rmd_tab1, rmd_tab_content, "\n")
+  }
 
-    tab_rmd2 <- tab_rmd |>
+  rmd_intro_f <- "\nNas próximas seções, o descritivo de cada cluster. \n"
+
+  rmd_clusters_results <- ""
+
+  for (i in seq_len(k_number)){
+
+    rmd_cluster_intro <- glue("## Cluster {i}")
+
+    clust_name <- paste0("clust_", i)
+
+    top3 <- k_data[[clust_name]]$word_freq |>
       arrange(-freq) |>
-      mutate(index = row_number()) |>
-      filter(index <= 10)
+      head(3) |>
+      pull(word) |>
+      paste(collapse = ", ")
 
-    top3 <- tab_rmd2 |>
-      filter(index <= 3) |>
-      pull(word)
-
-    top3 <- paste(top3, collapse = ", ")
-
-    rmd_intro_content <- paste0(rmd_intro_content,
-      glue(
-      "O {k_name} os principais termos foram: {top3}. "
-      )
-    )
-    rmd_cluster_base <- glue(
-      "
-
-      ### {k_name}\n
+    rmd_cluster_terms <- glue("O cluster a seguir, tem os seguintes principais termos: {top3}. Que pode ser representado nesta nuvem de palavras.
 
 
-      "
-    )
+    ")
 
-    cluster_tab_ <- paste0(
-      "| Palavra | Frequência |\n",
-      "|---------|------------|\n"
-    )
+    rmd_cluster_network_text <- "Ao se analisar o cluster e sua rede de co-ocorrencia centralizando o termo YYYYY, encontra-se esta rede de correlações dos termos
 
-    for (i in seq_len(10)) {
 
-      row <- tab_rmd2 |>
-        filter(index == i)
+    "
 
-      row_content <- glue("| {row$word} | {row$freq} |")
-      cluster_tab_ <- paste0(cluster_tab_, row_content, "\n")
-    }
+    rmd_cluster_segment_text <- "Os principais 50 segmentos de texto do cluster é:
 
-    rmd_results <- paste0(rmd_results, rmd_cluster_base, cluster_tab_)
+
+    "
+
+    top_50_segements <- k_data[[clust_name]]$top_50_segments |>
+      pull(texto) |>
+      paste0(collapse = "|###|###|")
+
+    rmd_clusters_results <- paste0(rmd_clusters_results, "\n", rmd_cluster_intro, "\n", rmd_cluster_terms, "\n", rmd_cluster_network_text,"\n", rmd_cluster_segment_text, "\n", top_50_segements, "\n")
 
   }
 
-  doc_name <- paste(k_number, "relatorio.rmd")
-  rmd_content <- paste0(rmd_intro_base, plot_png, rmd_intro_content, rmd_results_head, rmd_results)
+  doc_name <- glue("ClusterViz_files/{k_number}-relatorio.rmd")
+  rmd_content <- paste(rmd_head, rmd_intro, "\n", dendograma_png, "\n", rmd_intro_results, "\n", rmd_tab1, "\n", rmd_intro_f, "\n", rmd_clusters_results)
 
   writeLines(rmd_content, doc_name)
   rmarkdown::render(doc_name, output_format = "html_document")
   rmarkdown::render(doc_name, output_format = "pdf_document")
+
 
   print("Relatório Gerado")
 
