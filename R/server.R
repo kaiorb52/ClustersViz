@@ -119,11 +119,15 @@ server <- function(input, output, session) {
 
     # W.I.P - resvisar tudo dps
 
-    # coluna_id <- input$coluna_id
-    # coluna_texto <- input$coluna_texto
-    #
-    # df <- df |>
-    #   lemmatização(coluna_texto = coluna_texto, coluna_id = coluna_id)
+    id    <- as.character(input$coluna_id)
+    texto <- as.character(input$coluna_texto)
+
+    shiny::showNotification("Rodando Lemmatização...", type = "message")
+
+    df <- df |>
+      lemmatização(coluna_texto = texto, coluna_id = id)
+
+    shiny::showNotification("Lemmatização Pronta", type = "message")
 
     rv$df <- df
   })
@@ -275,6 +279,7 @@ server <- function(input, output, session) {
   observeEvent(input$run_network_graph, {
     req(graphInput())
 
+    shiny::showNotification("Gerando graficos...", type = "message")
     print("Gerando graficos...")
 
     # df_lemmatizado <- criar_df_lemmatizado(
@@ -290,8 +295,8 @@ server <- function(input, output, session) {
     clusters  <- cutree(graphInput()$res1, k = graphInput()$k_number)
 
     df <- data.frame(
-      doc_id = names(graphInput()$corpus_split),
-      texto = sapply(graphInput()$corpus_split, as.character),
+      doc_id  = names(graphInput()$corpus_split),
+      texto   = sapply(graphInput()$corpus_split, as.character),
       cluster = clusters
     )
 
@@ -318,12 +323,13 @@ server <- function(input, output, session) {
       termo                  = termo,
       numberOfCoocs          = input$numberOfCoocs,
       termos_remove          = termos_remove,
-      all                    = FALSE
+      all                    = TRUE
     )
 
     rv$dados_plot_nuvem <- listas_k_data
 
     print("Graficos prontos")
+    shiny::showNotification("Graficos prontos", type = "message")
   })
 
   observeEvent(rv$data_plots, {
@@ -333,7 +339,7 @@ server <- function(input, output, session) {
       choices = palletas
     )
     updateSelectInput(session, "selected_cluster",
-      choices = paste0("clust_", rv$N)
+      choices = c("clust_0", paste0("clust_", rv$N))
     )
   })
 
@@ -341,14 +347,17 @@ server <- function(input, output, session) {
     req(rv$data_plots)
     req(input$selected_cluster)
 
-    data_grafs <- rv$data_plots
-    selected_cluster <- input$selected_cluster
+    if (input$graph_tabs == "Grafico de Rede"){
+      data_grafs <- rv$data_plots
+      selected_cluster <- input$selected_cluster
 
-    gerador_plot(
-      graphNetwork            = data_grafs[[selected_cluster]]$graphNetwork,
-      coocTerm                = data_grafs[[selected_cluster]]$coocTerm,
-      pallete                 = input$pallete
-    )
+      gerador_plot(
+        graphNetwork            = data_grafs[[selected_cluster]]$graphNetwork,
+        coocTerm                = data_grafs[[selected_cluster]]$coocTerm,
+        pallete                 = input$pallete
+      )
+
+    }
 
   })
 
@@ -356,25 +365,34 @@ server <- function(input, output, session) {
     req(rv$data_plots)
     req(input$selected_cluster)
 
-    wordcloud_data <- rv$dados_plot_nuvem[[input$selected_cluster]]$word_freq
+    if (input$graph_tabs == "Grafico de Nuvem"){
+      wordcloud_data <- rv$dados_plot_nuvem[[input$selected_cluster]]$word_freq
 
-    nuvem_plot(data = wordcloud_data, pallete = input$pallete)
+      nuvem_plot(data = wordcloud_data, pallete = input$pallete)
+
+    }
   })
 
   output$wordtreePlot <- renderUI({
     req(rv$data_plots)
     req(input$selected_cluster)
 
-    wordtree_data <- rv$dados_plot_nuvem[[input$selected_cluster]]$text
 
-    html_tree <- wordtree(
-      wordtree_data,
-      targetWord   = tolower(input$termo),
-      direction    = "suffix",
-      Number_words = 5
-    )
+    if (input$graph_tabs == "Grafico de Arvore de palavras"){
 
-    HTML(html_tree)
+      wordtree_data <- rv$dados_plot_nuvem[[input$selected_cluster]]$text
+
+      html_tree <- wordtree(
+        wordtree_data,
+        targetWord   = tolower(input$termo),
+        direction    = "suffix",
+        Number_words = 5
+      )
+
+      HTML(html_tree)
+
+    }
+
   })
 
 }

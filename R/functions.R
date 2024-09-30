@@ -22,6 +22,8 @@ lemmatização <- function(base, coluna_texto, coluna_id) {
   #   lemmatização(coluna_texto = "texto", coluna_id = "V1")
   #
 
+  print("Rodando Lemmatização...")
+
   df <- base %>% select(all_of(coluna_texto), all_of(coluna_id))
 
   df_lexique <- read.xlsx("dfs/Controle _ Geração de Rede de Territórios - Anbima.xlsx", sheet = 1)
@@ -52,8 +54,10 @@ lemmatização <- function(base, coluna_texto, coluna_id) {
 
   df[[coluna_texto]] <- sapply(df[[coluna_texto]], filtrar_palavras_significativas, stopwords = stopwords)
 
-  df <- rename(df, texto_lemmatizado = texto)
+  df <- rename(df, texto_lemmatizado_clusterviz = texto)
   df_f <- left_join(base, df, by = coluna_id)
+
+  print("Lemmatização Pronta")
 
   return(df_f)
 }
@@ -78,7 +82,7 @@ corpus_slipt <- function(df, texto, segment_size) {
 }
 
 
-clusterização <- function(corpus_split, k, min_docfreq = 50, min_segment_size = 50, min_split_members = 100) {
+clusterização <- function(corpus_split, k, min_docfreq = 50, min_split_members = 100) {
   # EXEMPLO:
   #
   # cluster_list <- clusterização(corpus_split = corpus_split, k = 16)
@@ -143,11 +147,21 @@ listas_k <- function(df, k, texto_var, termos_remove = "") {
   #   filter(value == max(value)) |>
   #   ungroup()
 
-  for (i in seq_len(k)) {
+  k_ <- seq_len(k)
+
+  k_ <- c(0, k_)
+
+  for (i in k_) {
     clust_nome <- paste0("clust_", i)
 
-    df_cluster <- df |>
-      filter(cluster == i)
+    if (i == 0){
+      df_cluster <- df
+    }
+
+    if (i != 0){
+      df_cluster <- df |>
+        filter(cluster == i)
+    }
 
     corpus <- corpus(df_cluster[[texto_var]])
 

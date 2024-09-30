@@ -17,7 +17,6 @@ reforma_tributaria <- data.table::fread(path)
 
 # -------------------------------------------------------------------------
 
-
 source("R/dependencies.R")
 source("R/zzz.R")
 source("R/functions.R")
@@ -25,11 +24,11 @@ source("R/create_rmd.R")
 
 # -------------------------------------------------------------------------
 
-# reforma_tributaria <- reforma_tributaria |>
-#   lemmatização(
-#     coluna_texto      = "texto",
-#     coluna_id         = "V1"
-#   )
+reforma_tributaria <- reforma_tributaria |>
+  lemmatização(
+    coluna_texto      = "texto",
+    coluna_id         = "V1"
+  )
 
 corpus_list <- corpus_slipt(
   reforma_tributaria,
@@ -76,15 +75,15 @@ data_grafs <- data_plot(
   termo            = TRUE,
   numberOfCoocs    = 15,
   termos_remove    = c("reforma_previdencia"),
-  all              = FALSE
+  all              = TRUE
 )
 
-gerador_plot(
-  graphNetwork     = data_grafs[["clust_1"]]$graphNetwork,
-  coocTerm         = data_grafs[["clust_1"]]$coocTerm
-)
-
-nuvem_plot(data = listas_k_data[["clust_3"]]$word_freq)
+# gerador_plot(
+#   graphNetwork     = data_grafs[["clust_1"]]$graphNetwork,
+#   coocTerm         = data_grafs[["clust_1"]]$coocTerm
+# )
+#
+# nuvem_plot(data = listas_k_data[["clust_3"]]$word_freq)
 
 create_rmd(
   df_nrows = nrow(reforma_tributaria),

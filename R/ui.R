@@ -160,13 +160,13 @@ ui <- fluidPage(
                 min = 1,
                 max = 500
               ),
-              shiny::numericInput(
-                inputId = "min_segment_size",
-                label = "min_segment_size",
-                value = 50,
-                min = 1,
-                max = 500
-              ),
+              # shiny::numericInput(
+              #   inputId = "min_segment_size",
+              #   label = "min_segment_size",
+              #   value = 50,
+              #   min = 1,
+              #   max = 500
+              # ),
               shiny::numericInput(
                 inputId = "min_split_members",
                 label = "min_split_members",
@@ -243,6 +243,7 @@ ui <- fluidPage(
           mainPanel(
             tabsetPanel(
               id = "graph_tabs",
+
               tabPanel(
                 "Grafico de Rede",
                 visNetworkOutput("networkPlot", height = "600px")
