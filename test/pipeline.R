@@ -17,6 +17,7 @@ reforma_tributaria <- data.table::fread(path)
 
 # -------------------------------------------------------------------------
 
+
 source("R/dependencies.R")
 source("R/zzz.R")
 source("R/functions.R")
@@ -85,17 +86,29 @@ data_grafs <- data_plot(
 #
 # nuvem_plot(data = listas_k_data[["clust_3"]]$word_freq)
 
+gerador_plot(
+  graphNetwork     = data_grafs[["clust_1"]]$graphNetwork,
+  coocTerm         = data_grafs[["clust_1"]]$coocTerm
+)
+
+gerar_plot_png(
+  graphNetwork     = data_grafs[["clust_1"]]$graphNetwork,
+  coocTerm         = data_grafs[["clust_1"]]$coocTerm
+)
+
+gerador_plot(
+  graphNetwork     = data_grafs[["clust_1"]]$graphNetwork,
+  coocTerm         = data_grafs[["clust_1"]]$coocTerm
+)
+
 create_rmd(
   df_nrows = nrow(reforma_tributaria),
   rainette_plot = p,
   df_corpus_clusters = df_corpus_clusters,
-  df_name = "reforma_previdencia",
-  k_data = listas_k_data
+  df_name  = "reforma_previdencia",
+  k_data   = listas_k_data,
+  k_number = cluster[["k_number"]]
 )
-
-listas_k_data$clust_1$top_50_segments |>
-  pull(texto) |>
-  paste0(collapse = " \n ")
 
 # library(wordcloud)
 #

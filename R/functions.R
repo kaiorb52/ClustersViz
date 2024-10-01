@@ -218,7 +218,7 @@ data_plot <- function(
     termo,
     numberOfCoocs = 15,
     termos_remove,
-    all = FALSE) {
+    all = TRUE) {
 
   nova_lista <- list()
 

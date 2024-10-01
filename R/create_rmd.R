@@ -7,7 +7,7 @@ library(glue)
 #
 # }
 
-create_rmd <- function(df_nrows, df_corpus_clusters, min_docfreq = 50, min_segment_size = 50, min_split_members = 100, rainette_plot, df_name, k_data) {
+create_rmd <- function(df_nrows, df_corpus_clusters, min_docfreq = 50, min_segment_size = 50, min_split_members = 100, rainette_plot, df_name, k_data, k_number) {
 
   print("Gerando Relatório...")
 
@@ -28,7 +28,6 @@ create_rmd <- function(df_nrows, df_corpus_clusters, min_docfreq = 50, min_segme
     )
 
 
-  k_number <- length(names(k_data))
   ggsave(plot = rainette_plot, filename = "ClusterViz_files/rainette_plot.png", height = 7, width = 12)
 
   rmd_head <- "\n---
@@ -70,6 +69,19 @@ output: html_document
       pull(word) |>
       paste(collapse = ", ")
 
+    top_10 <- k_data[[clust_name]]$word_freq |>
+      arrange(-freq) |>
+      head(10)
+
+    rmd_cluster_tab <- paste0("\n|  | Frequência |\n", "|---------|------------|\n")
+
+    for (a in seq_len(nrow(top_10))){
+
+      rmd_cluster_tab_content <- glue("| {top_10[a, 1]} | {top_10[a, 2]} |")
+      rmd_cluster_tab <- paste0(rmd_cluster_tab, rmd_cluster_tab_content, "\n")
+
+    }
+
     rmd_cluster_terms <- glue("O cluster a seguir, tem os seguintes principais termos: {top3}. Que pode ser representado nesta nuvem de palavras.
 
 
@@ -89,7 +101,7 @@ output: html_document
       pull(texto) |>
       paste0(collapse = "|###|###|")
 
-    rmd_clusters_results <- paste0(rmd_clusters_results, "\n", rmd_cluster_intro, "\n", rmd_cluster_terms, "\n", rmd_cluster_network_text,"\n", rmd_cluster_segment_text, "\n", top_50_segements, "\n")
+    rmd_clusters_results <- paste0(rmd_clusters_results, "\n", rmd_cluster_intro, "\n", rmd_cluster_tab, "\n", rmd_cluster_terms, "\n", rmd_cluster_network_text,"\n", rmd_cluster_segment_text, "\n", top_50_segements, "\n")
 
   }
 
@@ -105,3 +117,39 @@ output: html_document
 
 }
 
+library(igraph)
+library(ggraph)
+library(ggplot2)
+
+gerador_plot <- function(graphNetwork, coocTerm){
+
+  name <- tolower(coocTerm)
+
+  # Configurar cores e tamanhos dos nós e arestas
+  V(graphNetwork)$color <- ifelse(V(graphNetwork)$name == coocTerm, 'cornflowerblue', 'orange')
+  E(graphNetwork)$color <- "DarkGray"
+  E(graphNetwork)$width <- rescale(E(graphNetwork)$sig, to = c(1, 10))
+  V(graphNetwork)$size <- rescale(log(degree(graphNetwork)), to = c(5, 15))
+
+  # Converter o gráfico igraph para um formato que o visNetwork entende
+  nodes <- data.frame(id = V(graphNetwork)$name,
+                      label = V(graphNetwork)$name,
+                      color = V(graphNetwork)$color,
+                      size = V(graphNetwork)$size)
+
+  edges <- data.frame(from = as.character(ends(graphNetwork, es = E(graphNetwork), names = TRUE)[,1]),
+                      to = as.character(ends(graphNetwork, es = E(graphNetwork), names = TRUE)[,2]),
+                      color = E(graphNetwork)$color,
+                      width = E(graphNetwork)$width)
+
+  # Gerar o plot interativo com visNetwork
+  visNetwork(nodes, edges) %>%
+    visLayout(randomSeed = 100) %>%
+    visNodes(shape = "dot", font = list(size = 12)) %>%
+    visEdges(smooth = FALSE) %>%
+    visOptions(highlightNearest = list(enabled = TRUE, degree = 1, hover = TRUE),
+               nodesIdSelection = list(enabled = TRUE)) %>%
+    visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(stabilization = FALSE) #%>%
+  #visTitle(paste(name, "Graph"))
+}
