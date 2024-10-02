@@ -384,7 +384,7 @@ server <- function(input, output, session) {
 
       html_tree <- wordtree(
         wordtree_data,
-        targetWord   = tolower(input$termo),
+        targetWord   = tolower(input$termo_wordtree),
         direction    = "suffix",
         Number_words = 5
       )
