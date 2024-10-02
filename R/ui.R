@@ -229,25 +229,28 @@ ui <- fluidPage(
         condition = "output.corpus_slipt_exist == true",
         sidebarLayout(
           sidebarPanel(
-            textInput("termo", "Termo de Coocorrência", value = "reforma"),
-            numericInput("numberOfCoocs", "Número de Coocorrências", value = 15, min = 1, max = 30),
-            textInput(
-              "termos_remove", "Termos a Remover (separados por vírgula)",
-              value = ""
+            conditionalPanel(
+              condition = "input.graph_tabs == 'Grafico de Nuvem'",
+              textInput("termo", "Termo de Coocorrência", value = "reforma"),
+              numericInput("numberOfCoocs", "Número de Coocorrências", value = 15, min = 1, max = 30),
+              textInput(
+                "termos_remove", "Termos a Remover (separados por vírgula)",
+                value = ""
+              ),
+              actionButton("run_network_graph", "Gerar Graficos"),
+              hr()
             ),
-            actionButton("run_network_graph", "Gerar Graficos"),
-            hr(),
+            conditionalPanel(
+              condition = "input.graph_tabs == 'Grafico de Arvore de palavras'",
+              textInput("termo_wordtree", "Termo da Wordtree", value = ""),
+              hr()
+            ),
             selectInput("pallete", "Selecione a Palleta de cores dos graficos", choices = c()),
             selectInput("selected_cluster", "Selecione o cluster que deseja visualizar", choices = c())
           ),
           mainPanel(
             tabsetPanel(
               id = "graph_tabs",
-
-              tabPanel(
-                "Grafico de Rede",
-                visNetworkOutput("networkPlot", height = "600px")
-              ),
               tabPanel(
                 "Grafico de Nuvem",
                 wordcloud2Output("wordcloudPlot", height = "600px") # Alterado para exibir o wordcloud2
@@ -255,6 +258,10 @@ ui <- fluidPage(
               tabPanel(
                 "Grafico de Arvore de palavras",
                 uiOutput("wordtreePlot")
+              ),
+              tabPanel(
+                "Grafico de Rede",
+                visNetworkOutput("networkPlot", height = "600px")
               )
             )
           )
