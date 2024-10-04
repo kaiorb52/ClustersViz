@@ -106,7 +106,7 @@ gerador_plot <- function(graphNetwork, coocTerm, pallete = "default") {
 
 ## PNG =========================================================================
 
-gerar_plot_png <- function(graphNetwork, coocTerm){
+gerar_plot_png <- function(name, graphNetwork, coocTerm){
 
   set.seed(99)
 
@@ -129,7 +129,11 @@ gerar_plot_png <- function(graphNetwork, coocTerm){
   V(graphNetwork)$label_cex <- rescale(1 / (1 + dist_to_central), to = c(0.25, 1))  # Tamanhos escalonados
 
   par(mai = c(0, 0, 0, 0))
-  plot <- plot(
+
+  file_name <- paste0("graph_", coocTerm, ".png")
+  png(file_name, width = 1600, height = 1600, res = 350)  # Aumentando a resolução para 300 dpi
+
+  plot(
     graphNetwork,
     layout = layout.fruchterman.reingold, # Force Directed Layout
     #main = paste(name, ' Graph'),
@@ -143,7 +147,7 @@ gerar_plot_png <- function(graphNetwork, coocTerm){
     vertex.label = V(graphNetwork)$name,      # Nomes dos nós
   )
 
-  return(plot)
+  dev.off()
 }
 
 #######################################################################

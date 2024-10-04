@@ -15,7 +15,8 @@ server <- function(input, output, session) {
     data_plots       = NULL,
     listas_k_data    = NULL,
     data_plots       = NULL,
-    dados_plot_nuvem = NULL
+    dados_plot_nuvem = NULL,
+    df_corpus        = NULL
   )
 
   volumes <- getVolumes()()
@@ -300,7 +301,9 @@ server <- function(input, output, session) {
       cluster = clusters
     )
 
-    listas_k_data <- listas_k(
+    rv$df_corpus <- df
+
+    rv$listas_k_data <- listas_k(
       df                = df,
       k                 = graphInput()$k_number,
       texto             = "texto",
@@ -392,6 +395,31 @@ server <- function(input, output, session) {
       HTML(html_tree)
 
     }
+
+    output$data_plots_exist <- reactive({
+      return(!is.null(rv$data_plots))
+    })
+
+    observeEvent(input$run_lemmatizar, {
+
+      print("Gerando Relatorios...")
+
+      p <- rainette_plot(graphInput()$res1, graphInput()$dtm, k = graphInput()$k_number)
+
+      create_rmd(
+        df_nrows           = rv$df,
+        rainette_plot      = p,
+        corpus_split       = rv$df_corpus,
+        data_grafs         = rv$data_plots,
+        df_name            = rv$file_name,
+        k_data             = rv$listas_k_data,
+        k_number           = graphInput()$k_number
+      )
+
+      print("Relatorios Gerados")
+
+    })
+
 
   })
 

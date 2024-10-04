@@ -88,19 +88,23 @@ data_grafs <- data_plot(
 #
 # nuvem_plot(data = listas_k_data[["clust_3"]]$word_freq)
 #
-# gerar_plot_png(
-#   graphNetwork  = data_grafs[["clust_2"]]$graphNetwork,
-#   coocTerm      = data_grafs[["clust_2"]]$coocTerm
-# )
+#
+
+plot1 <- gerar_plot_png(
+  graphNetwork  = data_grafs[["clust_2"]]$graphNetwork,
+  coocTerm      = data_grafs[["clust_2"]]$coocTerm
+)
 
 create_rmd(
   df_nrows           = nrow(reforma_tributaria),
   rainette_plot      = p,
   df_corpus_clusters = df_corpus_clusters,
+  data_grafs         = data_grafs,
   df_name            = "reforma_previdencia",
   k_data             = listas_k_data,
   k_number           = cluster[["k_number"]]
 )
+
 
 measure <- c("chi2", "lr", "frequency", "docprop")
 show_negative <- FALSE

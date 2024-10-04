@@ -27,6 +27,16 @@ create_rmd <- function(df_nrows, df_corpus_clusters, min_docfreq = 50, min_segme
       percentuais = paste0(round((Freq/sum(Freq)) * 100, digits = 2), "%")
     )
 
+  for (u in names(data_grafs)){
+    df <- data_grafs[[u]]
+
+    gerador_plot(
+      graphNetwork     = df$graphNetwork,
+      coocTerm         = df$coocTerm
+    )
+
+    ggsave()
+  }
 
   ggsave(plot = rainette_plot, filename = "ClusterViz_files/rainette_plot.png", height = 7, width = 12)
 
@@ -120,36 +130,3 @@ output: html_document
 library(igraph)
 library(ggraph)
 library(ggplot2)
-
-gerador_plot <- function(graphNetwork, coocTerm){
-
-  name <- tolower(coocTerm)
-
-  # Configurar cores e tamanhos dos nós e arestas
-  V(graphNetwork)$color <- ifelse(V(graphNetwork)$name == coocTerm, 'cornflowerblue', 'orange')
-  E(graphNetwork)$color <- "DarkGray"
-  E(graphNetwork)$width <- rescale(E(graphNetwork)$sig, to = c(1, 10))
-  V(graphNetwork)$size <- rescale(log(degree(graphNetwork)), to = c(5, 15))
-
-  # Converter o gráfico igraph para um formato que o visNetwork entende
-  nodes <- data.frame(id = V(graphNetwork)$name,
-                      label = V(graphNetwork)$name,
-                      color = V(graphNetwork)$color,
-                      size = V(graphNetwork)$size)
-
-  edges <- data.frame(from = as.character(ends(graphNetwork, es = E(graphNetwork), names = TRUE)[,1]),
-                      to = as.character(ends(graphNetwork, es = E(graphNetwork), names = TRUE)[,2]),
-                      color = E(graphNetwork)$color,
-                      width = E(graphNetwork)$width)
-
-  # Gerar o plot interativo com visNetwork
-  visNetwork(nodes, edges) %>%
-    visLayout(randomSeed = 100) %>%
-    visNodes(shape = "dot", font = list(size = 12)) %>%
-    visEdges(smooth = FALSE) %>%
-    visOptions(highlightNearest = list(enabled = TRUE, degree = 1, hover = TRUE),
-               nodesIdSelection = list(enabled = TRUE)) %>%
-    visInteraction(navigationButtons = TRUE) %>%
-    visPhysics(stabilization = FALSE) #%>%
-  #visTitle(paste(name, "Graph"))
-}
