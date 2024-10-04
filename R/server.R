@@ -339,7 +339,7 @@ server <- function(input, output, session) {
       choices = palletas
     )
     updateSelectInput(session, "selected_cluster",
-      choices = c("clust_0", paste0("clust_", rv$N))
+      choices = paste0("clust_", rv$N)
     )
   })
 

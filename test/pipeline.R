@@ -2,8 +2,10 @@
 
 rm(list = ls())
 
-path <- "~/Documentos/reforma_tributaria.rds"
-reforma_tributaria <- readRDS(path)
+reforma_tributaria <- data.table::fread("~/Documentos/reforma_tributaria.csv")
+
+# path <- "~/Documentos/reforma_tributaria.rds"
+# reforma_tributaria <- readRDS(path)
 
 # path <- "~/git/dados/reforma_tributaria.csv"
 # reforma_tributaria <- data.table::fread(path)
@@ -85,11 +87,11 @@ data_grafs <- data_plot(
 # )
 #
 # nuvem_plot(data = listas_k_data[["clust_3"]]$word_freq)
-
-gerar_plot_png(
-  graphNetwork  = data_grafs[["clust_2"]]$graphNetwork,
-  coocTerm      = data_grafs[["clust_2"]]$coocTerm
-)
+#
+# gerar_plot_png(
+#   graphNetwork  = data_grafs[["clust_2"]]$graphNetwork,
+#   coocTerm      = data_grafs[["clust_2"]]$coocTerm
+# )
 
 create_rmd(
   df_nrows           = nrow(reforma_tributaria),
@@ -100,14 +102,11 @@ create_rmd(
   k_number           = cluster[["k_number"]]
 )
 
-# library(wordcloud)
-#
-# words <- listas_k_data$clust_1$word_freq$word
-# frequencies <- listas_k_data$clust_1$word_freq$freq
-#
-# wordcloud(words = words, freq = frequencies,
-#           min.freq = 5,
-#           max.words = 100000,
-#           random.order = FALSE,
-#           colors = brewer.pal(8, "Dark2")
-# )
+measure <- c("chi2", "lr", "frequency", "docprop")
+show_negative <- FALSE
+max_k <- max(cluster[["k_number"]], na.rm = TRUE)
+
+groups <- rainette::cutree_rainette(cluster[["res1"]], cluster[["k_number"]])
+tabs   <- rainette::rainette_stats(groups, cluster[["dtm"]], measure, 100, FALSE)
+
+

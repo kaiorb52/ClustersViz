@@ -149,7 +149,7 @@ listas_k <- function(df, k, texto_var, termos_remove = "") {
 
   k_ <- seq_len(k)
 
-  k_ <- c(0, k_)
+  # k_ <- c(0, k_)
 
   for (i in k_) {
     clust_nome <- paste0("clust_", i)

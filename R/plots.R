@@ -188,3 +188,14 @@ nuvem_plot <- function(data, pallete = "default"){
   )
 }
 
+#
+# words <- listas_k_data$clust_1$word_freq$word
+# frequencies <- listas_k_data$clust_1$word_freq$freq
+#
+# wordcloud(words = words, freq = frequencies,
+#           min.freq = 5,
+#           max.words = 100000,
+#           random.order = FALSE,
+#           colors = brewer.pal(8, "Dark2")
+# )
+
