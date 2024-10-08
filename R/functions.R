@@ -198,6 +198,8 @@ listas_k <- function(df, k, texto_var, termos_remove = "") {
       head(1) |>
       pull(word)
 
+    set.seed(99)
+
     sample <- sample_n(df_cluster, size = 50)
 
     lista[[clust_nome]]$text      <- df_cluster[[texto_var]]

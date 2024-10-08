@@ -90,7 +90,8 @@ data_grafs <- data_plot(
 #
 #
 
-plot1 <- gerar_plot_png(
+gerar_plot_png(
+  network_path  = "clust_2.png",
   graphNetwork  = data_grafs[["clust_2"]]$graphNetwork,
   coocTerm      = data_grafs[["clust_2"]]$coocTerm
 )

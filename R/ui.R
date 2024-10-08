@@ -247,10 +247,7 @@ ui <- fluidPage(
             ),
             selectInput("pallete", "Selecione a Palleta de cores dos graficos", choices = c()),
             selectInput("selected_cluster", "Selecione o cluster que deseja visualizar", choices = c()),
-            conditionalPanel(
-              condition = "output.data_plots_exist == true",
-              actionButton("run_relatorio", "Gerar Relatorio")
-            )
+            actionButton("run_relatorio", "Gerar Relatorio")
           ),
           mainPanel(
             tabsetPanel(

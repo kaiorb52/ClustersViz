@@ -106,11 +106,9 @@ gerador_plot <- function(graphNetwork, coocTerm, pallete = "default") {
 
 ## PNG =========================================================================
 
-gerar_plot_png <- function(name, graphNetwork, coocTerm){
+gerar_plot_png <- function(network_path, graphNetwork, coocTerm){
 
   set.seed(99)
-
-  name <- coocTerm
 
   V(graphNetwork)$color <- ifelse(V(graphNetwork)$name == coocTerm, 'cornflowerblue', 'orange')
   E(graphNetwork)$color <- adjustcolor("DarkGray", alpha.f = .5)
@@ -130,8 +128,7 @@ gerar_plot_png <- function(name, graphNetwork, coocTerm){
 
   par(mai = c(0, 0, 0, 0))
 
-  file_name <- paste0("graph_", coocTerm, ".png")
-  png(file_name, width = 1600, height = 1600, res = 350)  # Aumentando a resolução para 300 dpi
+  png(network_path, width = 1600, height = 1600, res = 350)  # Aumentando a resolução para 300 dpi
 
   plot(
     graphNetwork,
@@ -175,7 +172,7 @@ nuvem_plot <- function(data, pallete = "default"){
   }
 
   if (pallete == "default") {
-    colorVec <- rep(c('black', 'grey5', 'grey10'), length.out = nrow(demoFreq))
+    colorVec <- rep(c('black'), length.out = nrow(demoFreq))
   }
 
   data_desc <- data |>

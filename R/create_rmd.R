@@ -7,7 +7,7 @@ library(glue)
 #
 # }
 
-create_rmd <- function(df_nrows, df_corpus_clusters, min_docfreq = 50, min_segment_size = 50, min_split_members = 100, rainette_plot, df_name, k_data, k_number) {
+create_rmd <- function(df_nrows, df_corpus_clusters, data_grafs, min_docfreq = 50, min_segment_size = 50, min_split_members = 100, rainette_plot, df_name, k_data, k_number) {
 
   print("Gerando Relatório...")
 
@@ -15,7 +15,6 @@ create_rmd <- function(df_nrows, df_corpus_clusters, min_docfreq = 50, min_segme
     dir.create("ClusterViz_files")
 
   }
-
 
   corpus_split_nrows   = nrow(df_corpus_clusters)
   corpus_split_percent = nrow(df_corpus_clusters |> filter(!is.na(cluster))) / nrow(df_corpus_clusters)
@@ -27,16 +26,16 @@ create_rmd <- function(df_nrows, df_corpus_clusters, min_docfreq = 50, min_segme
       percentuais = paste0(round((Freq/sum(Freq)) * 100, digits = 2), "%")
     )
 
-  for (u in names(data_grafs)){
-    df <- data_grafs[[u]]
-
-    gerador_plot(
-      graphNetwork     = df$graphNetwork,
-      coocTerm         = df$coocTerm
-    )
-
-    ggsave()
-  }
+  # for (u in names(data_grafs)){
+  #   df <- data_grafs[[u]]
+  #
+  #   gerador_plot(
+  #     graphNetwork     = df$graphNetwork,
+  #     coocTerm         = df$coocTerm
+  #   )
+  #
+  #   ggsave()
+  # }
 
   ggsave(plot = rainette_plot, filename = "ClusterViz_files/rainette_plot.png", height = 7, width = 12)
 
@@ -92,17 +91,31 @@ output: html_document
 
     }
 
+
     rmd_cluster_terms <- glue("O cluster a seguir, tem os seguintes principais termos: {top3}. Que pode ser representado nesta nuvem de palavras.
 
 
     ")
 
-    rmd_cluster_network_text <- "Ao se analisar o cluster e sua rede de co-ocorrencia centralizando o termo YYYYY, encontra-se esta rede de correlações dos termos
+    rmd_cluster_network_text <- glue("Ao se analisar o cluster e sua rede de co-ocorrencia centralizando o termo {data_grafs[[clust_name]]$coocTerm}, encontra-se esta rede de correlações dos termos
 
 
-    "
+    ")
 
-    rmd_cluster_segment_text <- "Os principais 50 segmentos de texto do cluster é:
+    network_path <- paste0("ClusterViz_files/graph_", clust_name, "-", data_grafs[[clust_name]]$coocTerm, ".png")
+
+    gerar_plot_png(
+      network_path  = network_path,
+      graphNetwork  = data_grafs[[clust_name]]$graphNetwork,
+      coocTerm      = data_grafs[[clust_name]]$coocTerm
+    )
+
+    network_path <- paste0("graph_", clust_name, "-", data_grafs[[clust_name]]$coocTerm, ".png")
+
+    network_png <- glue("\n![]({network_path})\n")
+
+
+    rmd_cluster_segment_text <- "\nOs principais 50 segmentos de texto do cluster é:\n
 
 
     "
@@ -111,15 +124,32 @@ output: html_document
       pull(texto) |>
       paste0(collapse = "|###|###|")
 
-    rmd_clusters_results <- paste0(rmd_clusters_results, "\n", rmd_cluster_intro, "\n", rmd_cluster_tab, "\n", rmd_cluster_terms, "\n", rmd_cluster_network_text,"\n", rmd_cluster_segment_text, "\n", top_50_segements, "\n")
+    rmd_clusters_results <- paste0(
+      rmd_clusters_results, "\n",
+      rmd_cluster_intro, "\n",
+      rmd_cluster_tab, "\n",
+      rmd_cluster_terms, "\n",
+      rmd_cluster_network_text,"\n",
+      network_png, "\n",
+      rmd_cluster_segment_text, "\n",
+      top_50_segements, "\n"
+    )
 
   }
 
   doc_name <- glue("ClusterViz_files/{k_number}-relatorio.rmd")
-  rmd_content <- paste(rmd_head, rmd_intro, "\n", dendograma_png, "\n", rmd_intro_results, "\n", rmd_tab1, "\n", rmd_intro_f, "\n", rmd_clusters_results)
+  rmd_content <- paste(
+    rmd_head,
+    rmd_intro, "\n",
+    dendograma_png, "\n",
+    rmd_intro_results, "\n",
+    rmd_tab1, "\n",
+    rmd_intro_f, "\n",
+    rmd_clusters_results
+  )
 
   writeLines(rmd_content, doc_name)
-  rmarkdown::render(doc_name, output_format = "html_document")
+  #rmarkdown::render(doc_name, output_format = "html_document")
   rmarkdown::render(doc_name, output_format = "pdf_document")
 
 

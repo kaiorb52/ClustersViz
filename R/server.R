@@ -303,7 +303,7 @@ server <- function(input, output, session) {
 
     rv$df_corpus <- df
 
-    rv$listas_k_data <- listas_k(
+    listas_k_data <- listas_k(
       df                = df,
       k                 = graphInput()$k_number,
       texto             = "texto",
@@ -396,30 +396,25 @@ server <- function(input, output, session) {
 
     }
 
-    output$data_plots_exist <- reactive({
-      return(!is.null(rv$data_plots))
-    })
+  })
 
-    observeEvent(input$run_lemmatizar, {
+  observeEvent(input$run_relatorio, {
 
-      print("Gerando Relatorios...")
+    print("Gerando Relatorios...")
 
-      p <- rainette_plot(graphInput()$res1, graphInput()$dtm, k = graphInput()$k_number)
+    p <- rainette_plot(graphInput()$res1, graphInput()$dtm, k = graphInput()$k_number)
 
-      create_rmd(
-        df_nrows           = rv$df,
-        rainette_plot      = p,
-        corpus_split       = rv$df_corpus,
-        data_grafs         = rv$data_plots,
-        df_name            = rv$file_name,
-        k_data             = rv$listas_k_data,
-        k_number           = graphInput()$k_number
-      )
+    create_rmd(
+      df_nrows           = nrow(rv$df),
+      df_corpus_clusters = rv$df_corpus,
+      data_grafs         = rv$data_plots,
+      rainette_plot      = p,
+      df_name            = rv$file_name,
+      k_data             = rv$dados_plot_nuvem,
+      k_number           = graphInput()$k_number
+    )
 
-      print("Relatorios Gerados")
-
-    })
-
+    print("Relatorios Gerados")
 
   })
 
