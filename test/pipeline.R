@@ -2,7 +2,9 @@
 
 rm(list = ls())
 
-reforma_tributaria <- data.table::fread("~/Documentos/reforma_tributaria.csv")
+#reforma_tributaria <- data.table::fread("~/Documentos/reforma_tributaria.csv")
+
+reforma_tributaria <- readRDS("~/Documentos/lula/lula_youtube.rds")
 
 # path <- "~/Documentos/reforma_tributaria.rds"
 # reforma_tributaria <- readRDS(path)
@@ -19,7 +21,6 @@ reforma_tributaria <- data.table::fread("~/Documentos/reforma_tributaria.csv")
 
 # -------------------------------------------------------------------------
 
-
 source("R/dependencies.R")
 source("R/zzz.R")
 source("R/functions.R")
@@ -29,13 +30,18 @@ source("R/create_rmd.R")
 
 reforma_tributaria <- reforma_tributaria |>
   lemmatização(
-    coluna_texto = "texto",
+    #coluna_texto = "texto",
+    coluna_texto = "conteudo",
     coluna_id    = "V1"
   )
 
+reforma_tributaria |>
+  select(V1, id, conteudo, texto_lemmatizado_limpo) |>
+  View()
+
 corpus_list <- corpus_slipt(
   reforma_tributaria,
-  texto         = "texto_lemmatizado_limpo",
+  texto         = "texto_lemmatizado_limpo.x",
   segment_size  = 50
 )
 

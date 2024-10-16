@@ -16,6 +16,7 @@ r_environment <- function() {
 ############################################################################
 
 lemmatização <- function(base, coluna_texto, coluna_id) {
+
   # EXEMPLO:
   #
   # reforma_tributaria_f <- reforma_tributaria |>
@@ -28,33 +29,38 @@ lemmatização <- function(base, coluna_texto, coluna_id) {
 
   df_lexique <- read.xlsx("dfs/Controle _ Geração de Rede de Territórios - Anbima.xlsx", sheet = 1)
   custom_lemmatization <- setNames(df_lexique$palavra_lemmatizada, df_lexique$palavra)
-  # Leitura da planilha que contém o lexique para lemmatização personalizada
 
   df_stopwords <- read.xlsx("dfs/Controle _ Geração de Rede de Territórios - Anbima.xlsx", sheet = 2)
   stopwords <- unique(df_stopwords$stopwords)
-  # Leitura da planilha de stopwords
 
   limpar_texto <- function(texto) {
+
     texto <- str_trim(texto)
+    texto <- str_replace_all(texto, "(https?://\\S+|www\\S+)", "")
+    texto <- str_replace_all(texto, "@\\w+|#\\w+", "")
     texto <- str_replace_all(texto, "[^\\w\\s]", "")
     texto <- str_replace_all(texto, "\\b\\d{1,2}(:\\d{1,2})?(h|min|m|s|hr|hrs|hora|horas|minuto|minutos)?\\b", "")
+    texto <- str_replace_all(texto, "[-_]{3,}", "")
     texto <- tolower(texto)
-    texto <- iconv(texto, to = "ASCII//TRANSLIT") # Remover acentuação
+    texto <- iconv(texto, to = "ASCII//TRANSLIT")
+
     return(texto)
   }
-
+  # Aplica a função de limpeza no texto
   df[[coluna_texto]] <- sapply(df[[coluna_texto]], limpar_texto)
 
   filtrar_palavras_significativas <- function(texto, stopwords) {
     palavras <- unlist(str_split(texto, "\\s+"))
     palavras_filtradas <- palavras[!palavras %in% stopwords]
     return(paste(palavras_filtradas, collapse = " "))
-    # removedor de stopwords
   }
 
+  # Remove stopwords
   df[[coluna_texto]] <- sapply(df[[coluna_texto]], filtrar_palavras_significativas, stopwords = stopwords)
 
-  df <- rename(df, texto_lemmatizado_clusterviz = texto)
+  # Corrigindo o erro de renomeação
+  df <- df %>% rename(texto_lemmatizado_limpo = !!coluna_texto)
+
   df_f <- left_join(base, df, by = coluna_id)
 
   print("Lemmatização Pronta")
@@ -63,7 +69,8 @@ lemmatização <- function(base, coluna_texto, coluna_id) {
 }
 
 
-corpus_slipt <- function(df, texto, segment_size) {
+corpus_slipt <- function(df, texto, segment_size = 50) {
+
   # EXEMPLO:
   #
   # corpus_list <- reforma_tributaria |>
@@ -83,11 +90,16 @@ corpus_slipt <- function(df, texto, segment_size) {
 
 
 clusterização <- function(corpus_split, k, min_docfreq = 50, min_split_members = 100) {
+
   # EXEMPLO:
   #
   # cluster_list <- clusterização(corpus_split = corpus_split, k = 16)
 
-  dtm <- dfm(tokens(corpus_split))
+  corpus_tokens <- corpus_split |>
+    tokens(remove_punct = TRUE, remove_numbers = TRUE, remove_symbols = TRUE, remove_url = TRUE) |>
+    tokens_tolower()
+
+  dtm <- dfm(corpus_tokens)
   dtm <- dfm_trim(dtm, min_docfreq = min_docfreq)
   res1 <- rainette(dtm, k = k, min_segment_size = 50, min_split_members = min_split_members)
 
@@ -96,11 +108,11 @@ clusterização <- function(corpus_split, k, min_docfreq = 50, min_split_members
   tab <- table(cluster_assignments)
 
   lista <- list(
-    "res1" = res1,
-    "dtm" = dtm,
+    "res1"         = res1,
+    "dtm"          = dtm,
     "corpus_split" = corpus_split,
-    "k_number" = k,
-    "tab" = tab
+    "k_number"     = k,
+    "tab"          = tab
   )
 
   return(lista)
